@@ -37,14 +37,14 @@
         </button>
 
         <div class="user-profile" [matMenuTriggerFor]="userMenu">
-          <div class="avatar">JD</div>
+          <div class="avatar">{{ getUserInitials() }}</div>
         </div>
         
         <mat-menu #userMenu="matMenu" xPosition="before" class="premium-menu">
           <div class="menu-header">
-            <div class="menu-avatar">JD</div>
+            <div class="menu-avatar">{{ getUserInitials() }}</div>
             <div class="menu-info">
-              <div class="user-name">John Doe</div>
+              <div class="user-name">{{ auth.currentUser()?.first_name }} {{ auth.currentUser()?.last_name }}</div>
               <div class="user-role">{{auth.currentRole() | titlecase}}</div>
             </div>
           </div>

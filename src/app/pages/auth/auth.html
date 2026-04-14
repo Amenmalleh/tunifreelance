@@ -61,6 +61,13 @@
       </p>
 
       <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <!-- Username Field (for both login and signup) -->
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" placeholder="e.g. johndoe" required>
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
         <!-- Signup Fields -->
         <ng-container *ngIf="!isLogin">
           <div class="form-row">
@@ -89,8 +96,18 @@
           <mat-hint *ngIf="!isLogin">Password (8 or more characters)</mat-hint>
         </mat-form-field>
 
-        <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="authForm.invalid">
-          {{ isLogin ? 'Sign In' : 'Create Account' }}
+        <!-- Confirm Password for Signup -->
+        <ng-container *ngIf="!isLogin">
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput formControlName="password2" type="password" placeholder="Confirm Password" required>
+            <mat-icon matSuffix>lock</mat-icon>
+          </mat-form-field>
+        </ng-container>
+
+        <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="authForm.invalid || isLoading">
+          <span *ngIf="!isLoading">{{ isLogin ? 'Sign In' : 'Create Account' }}</span>
+          <span *ngIf="isLoading">Loading...</span>
         </button>
 
         <div class="divider">

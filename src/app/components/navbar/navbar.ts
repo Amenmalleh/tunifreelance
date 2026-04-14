@@ -30,6 +30,14 @@ export class Navbar {
   public auth = inject(AuthService);
   private router = inject(Router);
 
+  getUserInitials(): string {
+    const user = this.auth.currentUser();
+    if (user && user.first_name && user.last_name) {
+      return (user.first_name[0] + user.last_name[0]).toUpperCase();
+    }
+    return 'U'; // Default for unknown user
+  }
+
   toggleRole() {
     this.auth.toggleRole();
     // Redirect to home or relevant dashboard on role change
