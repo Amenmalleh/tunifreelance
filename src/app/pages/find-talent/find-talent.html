@@ -1,0 +1,100 @@
+<div class="talent-dashboard">
+  <header class="dashboard-header">
+    <div class="container header-content">
+      <div class="welcome-section">
+        <h1 class="greeting">Find the best talent</h1>
+        <p class="subtitle">Connect with professionals from around the world</p>
+      </div>
+      <div class="main-search-container">
+        <div class="premium-search-box">
+          <mat-icon>person_search</mat-icon>
+          <input type="text" placeholder="Search for talent (Angular, UI/UX, Node.js...)">
+          <button mat-raised-button color="primary">Search</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container dashboard-grid">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-card glass">
+        <h3>Talent Stats</h3>
+        <div class="stat-item">
+          <span class="stat-label">Verified Talents</span>
+          <div class="progress-bar">
+            <div class="progress" style="width: 92%"></div>
+          </div>
+          <span class="stat-value">92%</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card filter-card glass">
+        <h3>Filters</h3>
+        <div class="filter-section">
+          <label>Category</label>
+          <mat-chip-listbox>
+            <mat-chip-option>Development</mat-chip-option>
+            <mat-chip-option>Design</mat-chip-option>
+            <mat-chip-option>Marketing</mat-chip-option>
+          </mat-chip-listbox>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="feed-container">
+      <div class="feed-header">
+        <h2>Top Rated Professionals</h2>
+      </div>
+
+      <div class="feed-card glass">
+        @for (talent of freelancers; track talent.name; let last = $last) {
+          <div class="talent-entry-wrapper">
+            <article class="talent-entry">
+              <div class="entry-header">
+                <div class="talent-profile-top">
+                  <div class="talent-avatar-large">{{talent.avatar}}</div>
+                  <div class="talent-details">
+                    <h3 class="talent-name">{{talent.name}}</h3>
+                    <p class="talent-title">{{talent.title}}</p>
+                    <div class="talent-badges">
+                      <span class="badge"><mat-icon>verified</mat-icon> Top Rated</span>
+                      <span class="badge"><mat-icon>payments</mat-icon> {{talent.earnings}} earned</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="talent-actions-top">
+                  <span class="rate"><strong>{{talent.rate}}</strong></span>
+                  <button mat-icon-button class="save-icon">
+                    <mat-icon>favorite_border</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+              <div class="entry-content">
+                <p class="description">{{talent.description}}</p>
+                <div class="skills-list">
+                  @for (skill of talent.skills; track skill) {
+                    <span class="skill-tag">{{skill}}</span>
+                  }
+                </div>
+              </div>
+
+              <div class="entry-footer">
+                <div class="talent-rating-row">
+                  <mat-icon>stars</mat-icon>
+                  <span>{{talent.rating}} Score</span>
+                </div>
+                <button mat-raised-button color="primary" class="invite-btn">Invite to Job</button>
+              </div>
+            </article>
+            @if (!last) {
+              <mat-divider></mat-divider>
+            }
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>

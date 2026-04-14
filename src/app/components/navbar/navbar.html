@@ -1,25 +1,79 @@
-<mat-toolbar class="navbar shadow">
-  <div class="navbar-container">
-    <div class="logo">
+<mat-toolbar class="navbar sticky-nav">
+  <div class="navbar-container container">
+    <div class="logo-section" routerLink="/">
       <mat-icon class="logo-icon">rocket_launch</mat-icon>
       <span class="logo-text">FreelanceHub</span>
     </div>
 
-    <span class="spacer"></span>
+    @if (auth.isLoggedIn()) {
+      <nav class="main-nav">
+        @if (auth.currentRole() === 'freelancer') {
+          <button mat-button [routerLink]="['/jobs']" routerLinkActive="active-link">Find Work</button>
+          <button mat-button [routerLink]="['/dashboard']" routerLinkActive="active-link">My Dashboard</button>
+          <button mat-button routerLinkActive="active-link">Reports</button>
+        } @else {
+          <button mat-button [routerLink]="['/talent']" routerLinkActive="active-link">Find Talent</button>
+          <button mat-button [routerLink]="['/post-job']" routerLinkActive="active-link">Post a Job</button>
+          <button mat-button [routerLink]="['/dashboard']" routerLinkActive="active-link">My Dashboard</button>
+        }
+        <button mat-button routerLinkActive="active-link">Messages</button>
+      </nav>
 
-    <nav class="nav-links">
-      <button mat-button aria-label="Explore">Explore</button>
-      <button mat-button aria-label="Projects">Projects</button>
-      <button mat-button aria-label="Freelancers">Freelancers</button>
-    </nav>
+      <div class="search-nav-container">
+        <div class="nav-search">
+          <mat-icon>search</mat-icon>
+          <input type="text" [placeholder]="auth.currentRole() === 'freelancer' ? 'Search for jobs...' : 'Search for talent...'">
+        </div>
+      </div>
 
-    <div class="auth-buttons">
-      <button mat-button color="accent">Sign In</button>
-      <button mat-raised-button color="primary" class="join-btn">Join Now</button>
-    </div>
-    
-    <button mat-icon-button class="mobile-menu-toggle" aria-label="Menu">
-        <mat-icon>menu</mat-icon>
+      <div class="nav-actions">
+        <button mat-icon-button aria-label="Notifications" matTooltip="Notifications">
+          <mat-icon>notifications_none</mat-icon>
+          <span class="notification-dot"></span>
+        </button>
+        
+        <button mat-icon-button aria-label="Messages" matTooltip="Messages">
+          <mat-icon>chat_bubble_outline</mat-icon>
+        </button>
+
+        <div class="user-profile" [matMenuTriggerFor]="userMenu">
+          <div class="avatar">JD</div>
+        </div>
+        
+        <mat-menu #userMenu="matMenu" xPosition="before" class="premium-menu">
+          <div class="menu-header">
+            <div class="menu-avatar">JD</div>
+            <div class="menu-info">
+              <div class="user-name">John Doe</div>
+              <div class="user-role">{{auth.currentRole() | titlecase}}</div>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="toggleRole()">
+            <mat-icon>swap_horiz</mat-icon>
+            <span>Switch to {{auth.currentRole() === 'freelancer' ? 'Client' : 'Freelancer'}}</span>
+          </button>
+          <button mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>Settings</span>
+          </button>
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Log Out</span>
+          </button>
+        </mat-menu>
+      </div>
+    } @else {
+      <span class="spacer"></span>
+      <div class="auth-buttons">
+        <button mat-button color="primary" routerLink="/signin">Sign In</button>
+        <button mat-raised-button color="primary" class="join-btn" routerLink="/signup">Join Now</button>
+      </div>
+    }
+
+    <button mat-icon-button class="mobile-toggle" aria-label="Menu">
+      <mat-icon>menu</mat-icon>
     </button>
   </div>
 </mat-toolbar>

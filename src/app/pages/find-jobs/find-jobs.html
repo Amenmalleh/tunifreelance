@@ -1,0 +1,118 @@
+<div class="jobs-dashboard">
+  <header class="dashboard-header">
+    <div class="container header-content">
+      <div class="welcome-section">
+        <h1 class="greeting">Find the best jobs for you</h1>
+        <p class="subtitle" style="margin-top: 15px;">Personalized opportunities based on your skills</p>
+      </div>
+      <div class="main-search-container">
+        <div class="premium-search-box">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Search for jobs (Angular, UX design, Mobile...)">
+          <button mat-raised-button color="primary">Search</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container dashboard-grid">
+    <!-- Sidebar: Filters & Stats -->
+    <aside class="sidebar">
+      <div class="sidebar-card glass">
+        <h3>My Profile Stats</h3>
+        <div class="stat-item">
+          <span class="stat-label">Profile Completed</span>
+          <div class="progress-bar">
+            <div class="progress" style="width: 85%"></div>
+          </div>
+          <span class="stat-value">85%</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card filter-card glass">
+        <h3>Filter by</h3>
+        <div class="filter-section">
+          <label>Category</label>
+          <mat-chip-listbox>
+            @for (category of categories; track category) {
+            <mat-chip-option>{{category}}</mat-chip-option>
+            }
+          </mat-chip-listbox>
+        </div>
+
+        <div class="filter-section">
+          <label>Experience Level</label>
+          <div class="check-group">
+            <mat-chip-listbox>
+              <mat-chip-option>Entry Level</mat-chip-option>
+              <mat-chip-option selected>Intermediate</mat-chip-option>
+              <mat-chip-option>Expert</mat-chip-option>
+            </mat-chip-listbox>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content: Job Feed -->
+    <main class="feed-container">
+      <div class="feed-header">
+        <h2>Recommended for you</h2>
+        <div class="feed-tabs">
+          <span class="active-tab">Best Matches</span>
+          <span>Most Recent</span>
+          <span>Saved Jobs</span>
+        </div>
+      </div>
+
+      <div class="feed-card glass">
+        @for (job of jobs; track job.title; let last = $last) {
+        <div class="job-entry-wrapper">
+          <article class="job-entry">
+            <div class="entry-header">
+              <div class="title-section">
+                <h3 class="job-title">{{job.title}}</h3>
+                <div class="entry-meta">
+                  <span class="time-posted">Posted <strong>{{job.posted}}</strong></span>
+                  <span class="separator">•</span>
+                  <span class="location">{{job.location}}</span>
+                </div>
+              </div>
+              <button mat-icon-button class="save-icon">
+                <mat-icon>favorite_border</mat-icon>
+              </button>
+            </div>
+
+            <div class="entry-content">
+              <div class="payment-info">
+                <span class="budget">{{job.budget}}</span>
+                <span class="level">- Intermediate - Est. Time: {{job.duration}}</span>
+              </div>
+              <p class="description">{{job.description}}</p>
+              <div class="skills-list">
+                @for (skill of job.skills; track skill) {
+                <span class="skill-tag">{{skill}}</span>
+                }
+              </div>
+            </div>
+
+            <div class="entry-footer">
+              <div class="client-rating">
+                <mat-icon>verified</mat-icon>
+                <span>Payment verified</span>
+                <div class="stars">
+                  <mat-icon>star</mat-icon>
+                  <span>4.9</span>
+                </div>
+              </div>
+              <button mat-raised-button color="primary" class="apply-btn">Apply Now</button>
+            </div>
+          </article>
+          @if (!last) {
+          <mat-divider></mat-divider>
+          }
+        </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>

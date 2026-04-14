@@ -1,0 +1,178 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background-color: var(--dark-bg);
+}
+
+.talent-page {
+  padding-bottom: 50px;
+}
+
+.search-header {
+  padding: 80px 0 60px;
+  background: radial-gradient(circle at top right, var(--primary-glow), transparent),
+              radial-gradient(circle at bottom left, var(--secondary-glow), transparent);
+  text-align: center;
+}
+
+.search-header h1 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 30px;
+}
+
+.search-box {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  border-radius: 50px;
+  background: white;
+  border: 1px solid var(--glass-border);
+}
+
+.search-box mat-icon {
+  color: var(--text-muted);
+  margin-right: 12px;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1.1rem;
+  padding: 10px 0;
+}
+
+.search-box button {
+  border-radius: 30px;
+  padding: 0 25px;
+  height: 45px;
+}
+
+.talent-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 30px;
+  margin-top: -30px;
+  z-index: 2;
+  position: relative;
+}
+
+.glass {
+  background: var(--surface-bg);
+  backdrop-filter: blur(15px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+}
+
+.filters-sidebar {
+  padding: 25px;
+  height: fit-content;
+  position: sticky;
+  top: 100px;
+}
+
+.talent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.talent-card {
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+  border-color: var(--primary-color);
+}
+
+.talent-header {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 15px;
+}
+
+.talent-avatar {
+  width: 65px;
+  height: 65px;
+  background: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  box-shadow: 0 5px 15px var(--primary-glow);
+}
+
+.talent-info {
+  flex: 1;
+}
+
+.talent-info mat-card-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.rating mat-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  color: #ffc107;
+}
+
+.description {
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 15px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-badge {
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-color);
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+mat-card-actions {
+  padding: 15px 0 0 !important;
+  gap: 12px;
+}
+
+mat-card-actions button {
+  border-radius: 30px !important;
+  padding: 0 25px !important;
+}
