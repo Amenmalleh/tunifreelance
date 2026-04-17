@@ -33,21 +33,16 @@
         <h3>Filter by</h3>
         <div class="filter-section">
           <label>Category</label>
-          <mat-chip-listbox>
+          <div class="filter-buttons">
             @for (category of categories; track category) {
-            <mat-chip-option>{{category}}</mat-chip-option>
+            <button 
+              mat-stroked-button
+              [class.active]="selectedCategory === category"
+              (click)="filterByCategory(category)"
+              class="category-btn">
+              {{category}}
+            </button>
             }
-          </mat-chip-listbox>
-        </div>
-
-        <div class="filter-section">
-          <label>Experience Level</label>
-          <div class="check-group">
-            <mat-chip-listbox>
-              <mat-chip-option>Entry Level</mat-chip-option>
-              <mat-chip-option selected>Intermediate</mat-chip-option>
-              <mat-chip-option>Expert</mat-chip-option>
-            </mat-chip-listbox>
           </div>
         </div>
       </div>
@@ -56,7 +51,7 @@
     <!-- Main Content: Job Feed -->
     <main class="feed-container">
       <div class="feed-header">
-        <h2>Recommended for you</h2>
+        <h2>Available Jobs</h2>
         <div class="feed-tabs">
           <span class="active-tab">Best Matches</span>
           <span>Most Recent</span>
@@ -64,47 +59,75 @@
         </div>
       </div>
 
-      <div class="feed-card glass">
-        @for (job of jobs; track job.title; let last = $last) {
+      <!-- Search Bar -->
+      <div class="search-section">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search jobs</mat-label>
+          <input matInput placeholder="Search by title or keyword..." [(ngModel)]="searchText" (keyup)="search()">
+          <button mat-icon-button matSuffix (click)="search()">
+            <mat-icon>search</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading available jobs...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredJobs.length === 0" class="empty-state">
+        <mat-icon>search</mat-icon>
+        <p>No jobs found matching your criteria.</p>
+        <button mat-raised-button color="primary" (click)="selectedCategory = ''; searchText = ''; applyFilters()">Clear Filters</button>
+      </div>
+
+      <!-- Jobs Feed -->
+      <div class="feed-card glass" *ngIf="!isLoading && filteredJobs.length > 0">
+        @for (job of filteredJobs; track job.id; let last = $last) {
         <div class="job-entry-wrapper">
           <article class="job-entry">
             <div class="entry-header">
               <div class="title-section">
                 <h3 class="job-title">{{job.title}}</h3>
                 <div class="entry-meta">
-                  <span class="time-posted">Posted <strong>{{job.posted}}</strong></span>
+                  <span class="time-posted">Posted <strong>{{job.created_at | date:'short'}}</strong></span>
                   <span class="separator">•</span>
-                  <span class="location">{{job.location}}</span>
+                  <span class="category-badge">{{job.category}}</span>
                 </div>
               </div>
-              <button mat-icon-button class="save-icon">
+              <button mat-icon-button class="save-icon" (click)="saveJob(job.id)">
                 <mat-icon>favorite_border</mat-icon>
               </button>
             </div>
 
             <div class="entry-content">
               <div class="payment-info">
-                <span class="budget">{{job.budget}}</span>
-                <span class="level">- Intermediate - Est. Time: {{job.duration}}</span>
+                <span class="budget">{{job.budget}} DT</span>
+                <span class="status" [class.open]="job.status === 'open'">{{job.status | titlecase}}</span>
               </div>
-              <p class="description">{{job.description}}</p>
-              <div class="skills-list">
-                @for (skill of job.skills; track skill) {
-                <span class="skill-tag">{{skill}}</span>
-                }
+              <p class="description">{{job.description | slice:0:200}}...</p>
+              <div class="job-meta-info">
+                <span class="deadline">
+                  <mat-icon>calendar_today</mat-icon>
+                  Deadline: {{job.deadline}}
+                </span>
               </div>
             </div>
 
             <div class="entry-footer">
-              <div class="client-rating">
+              <div class="client-info">
                 <mat-icon>verified</mat-icon>
-                <span>Payment verified</span>
-                <div class="stars">
-                  <mat-icon>star</mat-icon>
-                  <span>4.9</span>
-                </div>
+                <span>Client: {{job.client}}</span>
               </div>
-              <button mat-raised-button color="primary" class="apply-btn">Apply Now</button>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                class="apply-btn"
+                (click)="applyForJob(job.id)">
+                Apply Now
+              </button>
             </div>
           </article>
           @if (!last) {

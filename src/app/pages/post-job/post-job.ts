@@ -8,7 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
+import { JobService, CreateJobOfferPayload } from '../../services/job.service';
 
 @Component({
   selector: 'app-post-job',
@@ -23,14 +27,21 @@ import { Router } from '@angular/router';
     MatIconModule,
     MatSelectModule,
     MatChipsModule,
-    MatStepperModule
+    MatStepperModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatSnackBarModule
   ],
   templateUrl: './post-job.html',
   styleUrl: './post-job.css'
 })
 export class PostJob {
   private fb = inject(FormBuilder);
-  private router = inject(Router);
+  router = inject(Router);
+  private jobService = inject(JobService);
+  private snackBar = inject(MatSnackBar);
+
+  isSubmitting = false;
 
   titleForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(10)]],
@@ -39,25 +50,59 @@ export class PostJob {
 
   detailsForm = this.fb.group({
     description: ['', [Validators.required, Validators.minLength(50)]],
-    skills: [[], [Validators.required]]
+    skills: ['', []]
   });
 
   budgetForm = this.fb.group({
-    jobType: ['hourly', [Validators.required]],
-    minBudget: ['', [Validators.required]],
-    maxBudget: [''],
-    fixedPrice: ['']
+    jobType: ['fixed', [Validators.required]],
+    minBudget: ['', [Validators.required, Validators.min(1)]],
+    maxBudget: ['', []],
+    deadline: ['', [Validators.required]]
   });
 
   submitJob() {
-    if (this.titleForm.valid && this.detailsForm.valid && this.budgetForm.valid) {
-      console.log('Job Posted!', {
-        ...this.titleForm.value,
-        ...this.detailsForm.value,
-        ...this.budgetForm.value
-      });
-      // Simulate success and redirect
-      this.router.navigate(['/talent']);
+    if (this.titleForm.invalid || this.detailsForm.invalid || this.budgetForm.invalid) {
+      this.snackBar.open('Please fill in all required fields correctly.', 'Close', { duration: 3000 });
+      return;
     }
+
+    this.isSubmitting = true;
+
+    const titleData = this.titleForm.value;
+    const detailsData = this.detailsForm.value;
+    const budgetData = this.budgetForm.value;
+
+    // Format the deadline to YYYY-MM-DD
+    const deadlineDate = new Date(budgetData.deadline!);
+    const deadline = deadlineDate.toISOString().split('T')[0];
+
+    // Determine budget based on job type
+    const budget = budgetData.jobType === 'fixed' 
+      ? parseFloat(budgetData.minBudget as string)
+      : parseFloat(budgetData.minBudget as string);
+
+    const payload: CreateJobOfferPayload = {
+      title: titleData.title!,
+      category: titleData.category!,
+      description: detailsData.description!,
+      budget: budget,
+      deadline: deadline
+    };
+
+    this.jobService.createJobOffer(payload).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
+        this.snackBar.open('Job posted successfully! 🎉', 'Close', { duration: 4000 });
+        setTimeout(() => {
+          this.router.navigate(['/jobs']);
+        }, 1000);
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        console.error('Error posting job:', err);
+        this.snackBar.open('Error posting job. Please try again.', 'Close', { duration: 4000 });
+      }
+    });
   }
 }
+     

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
@@ -8,12 +9,17 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { JobService, JobOffer } from '../../services/job.service';
 
 @Component({
   selector: 'app-find-jobs',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
+    FormsModule,
     MatFormFieldModule, 
     MatInputModule, 
     MatIconModule, 
@@ -21,54 +27,72 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatChipsModule,
     MatCardModule,
     MatDividerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   templateUrl: './find-jobs.html',
   styleUrl: './find-jobs.css'
 })
-export class FindJobs {
-  jobs = [
-    {
-      title: 'Senior Frontend Developer (Angular)',
-      company: 'Vermeg Tunisie',
-      location: 'Les Berges du Lac, Tunis',
-      budget: '3,500 - 5,000 DT / mois',
-      duration: 'Permanent',
-      description: 'Nous recherchons un développeur Angular expérimenté pour rejoindre notre équipe à Tunis. Expertise en RxJS et NgRx requise pour nos plateformes financières.',
-      skills: ['Angular', 'TypeScript', 'RxJS', 'Agile'],
-      posted: 'il y a 2 heures'
-    },
-    {
-      title: 'UI/UX Designer Mobile App',
-      company: 'Ooredoo Tunisie',
-      location: 'Tunis',
-      budget: '2,500 DT Fixe',
-      duration: '3 mois+',
-      description: 'Design de la nouvelle application mobile My Ooredoo. Création de parcours utilisateurs innovants et prototypage haute fidélité.',
-      skills: ['Figma', 'UI/UX Design', 'Telecom', 'Prototypage'],
-      posted: 'il y a 5 heures'
-    },
-    {
-      title: 'Expert Node.js / NestJS',
-      company: 'Telnet Holding',
-      location: 'Sfax / Remote',
-      budget: '4,000 DT / mois',
-      duration: 'Ongoing',
-      description: 'Développement de microservices critiques pour le secteur de l\'aéronautique et des systèmes embarqués.',
-      skills: ['Node.js', 'NestJS', 'PostgreSQL', 'Microservices'],
-      posted: 'il y a 1 jour'
-    },
-    {
-      title: 'Fullstack Developer (Laravel / Vue.js)',
-      company: 'Talan Tunisie',
-      location: 'Tunis',
-      budget: '3,000 DT / mois',
-      duration: 'Mission 6 mois',
-      description: 'Accompagnement de nos clients bancaires dans la digitalisation de leurs processus internes.',
-      skills: ['Laravel', 'Vue.js', 'MySQL', 'Docker'],
-      posted: 'il y a 3 jours'
-    }
-  ];
+export class FindJobs implements OnInit {
+  private jobService = inject(JobService);
+  private router = inject(Router);
+  private snackBar = inject(MatSnackBar);
 
-  categories = ['Développement Web', 'Design & Créatif', 'Marketing Digital', 'Data Science', 'IT & Réseaux'];
+  jobs: JobOffer[] = [];
+  filteredJobs: JobOffer[] = [];
+  isLoading = true;
+  categories = ['Web & Mobile Development', 'Design & Creative', 'Digital Marketing', 'Admin Support', 'Data Science'];
+  selectedCategory = '';
+  searchText = '';
+
+  ngOnInit() {
+    this.loadJobs();
+  }
+
+  loadJobs() {
+    this.isLoading = true;
+    this.jobService.getJobOffers().subscribe({
+      next: (data) => {
+        this.jobs = data;
+        this.filteredJobs = data;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error loading jobs:', err);
+        this.snackBar.open('Error loading jobs. Please try again.', 'Close', { duration: 4000 });
+        this.isLoading = false;
+        // Fallback to empty array
+        this.jobs = [];
+        this.filteredJobs = [];
+      }
+    });
+  }
+
+  filterByCategory(category: string) {
+    this.selectedCategory = this.selectedCategory === category ? '' : category;
+    this.applyFilters();
+  }
+
+  search() {
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    this.filteredJobs = this.jobs.filter(job => {
+      const matchesCategory = !this.selectedCategory || job.category === this.selectedCategory;
+      const matchesSearch = !this.searchText || 
+        job.title.toLowerCase().includes(this.searchText.toLowerCase()) ||
+        job.description.toLowerCase().includes(this.searchText.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }
+
+  applyForJob(jobId: number) {
+    this.router.navigate(['/proposal', jobId]);
+  }
+
+  saveJob(jobId: number) {
+    this.snackBar.open('Job saved to your profile!', 'Close', { duration: 3000 });
+  }
 }

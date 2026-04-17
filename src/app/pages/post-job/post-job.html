@@ -46,8 +46,8 @@
 
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Preferred Skills</mat-label>
-              <input matInput placeholder="e.g. Angular, Node.js, PHP, Figma">
-              <mat-hint>Separate skills with commas (data handling simulated in backend)</mat-hint>
+              <input matInput formControlName="skills" placeholder="e.g. Angular, Node.js, MySQL, Docker">
+              <mat-hint>Separate skills with commas</mat-hint>
             </mat-form-field>
           </div>
           <div class="stepper-actions">
@@ -60,9 +60,9 @@
       <!-- Step 3: Budget (Tunisian Dinars) -->
       <mat-step [stepControl]="budgetForm">
         <form [formGroup]="budgetForm">
-          <ng-template matStepLabel>Budget & Terms (TND)</ng-template>
+          <ng-template matStepLabel>Budget & Deadline (TND)</ng-template>
           <div class="form-section">
-            <p class="section-hint">Choose how you want to pay (all amounts in **Dinars Tunisiens**).</p>
+            <p class="section-hint">Choose how you want to pay (all amounts in **Dinars Tunisiens**) and set a deadline.</p>
             <div class="job-type-selector">
               <button type="button" mat-stroked-button [class.active]="budgetForm.get('jobType')?.value === 'hourly'" (click)="budgetForm.get('jobType')?.setValue('hourly')">Hourly Rate</button>
               <button type="button" mat-stroked-button [class.active]="budgetForm.get('jobType')?.value === 'fixed'" (click)="budgetForm.get('jobType')?.setValue('fixed')">Fixed Price</button>
@@ -71,7 +71,7 @@
             <div class="budget-inputs" *ngIf="budgetForm.get('jobType')?.value === 'hourly'">
               <mat-form-field appearance="outline">
                 <mat-label>Minimum (DT / hr)</mat-label>
-                <input matInput type="number" formControlName="minBudget" placeholder="0">
+                <input matInput type="number" formControlName="minBudget" placeholder="0" required>
                 <span matSuffix>DT</span>
               </mat-form-field>
 
@@ -85,14 +85,24 @@
             <div class="budget-inputs" *ngIf="budgetForm.get('jobType')?.value === 'fixed'">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Total Project Budget (DT)</mat-label>
-                <input matInput type="number" formControlName="minBudget" placeholder="0">
+                <input matInput type="number" formControlName="minBudget" placeholder="0" required>
                 <span matSuffix>DT</span>
               </mat-form-field>
             </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Deadline</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="deadline" required readonly>
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
           </div>
           <div class="stepper-actions">
             <button mat-button matStepperPrevious>Back</button>
-            <button mat-raised-button color="primary" (click)="submitJob()">Post Job Now</button>
+            <button mat-raised-button color="primary" (click)="submitJob()" [disabled]="isSubmitting">
+              <span *ngIf="!isSubmitting">Post Job Now</span>
+              <span *ngIf="isSubmitting">Posting...</span>
+            </button>
           </div>
         </form>
       </mat-step>

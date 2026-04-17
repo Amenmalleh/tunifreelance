@@ -12,6 +12,7 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  role: UserRole;
 }
 
 export interface AuthResponse {
@@ -27,6 +28,7 @@ export interface SignupData {
   password2: string;
   first_name: string;
   last_name: string;
+  role: UserRole;
 }
 
 export interface LoginData {
@@ -58,13 +60,19 @@ export class AuthService {
 
   private loadFromStorage() {
     const savedRole = localStorage.getItem('user_role') as UserRole;
-    if (savedRole) this.roleSignal.set(savedRole);
+    if (savedRole) {
+      this.roleSignal.set(savedRole);
+    }
 
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
-        this.userSignal.set(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser) as User;
+        this.userSignal.set(parsedUser);
         this.isLoggedInSignal.set(true);
+        if (parsedUser.role) {
+          this.roleSignal.set(parsedUser.role);
+        }
       } catch (e) {
         console.error('Error parsing saved user:', e);
       }
@@ -85,6 +93,7 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('access_token', access);
     localStorage.setItem('refresh_token', refresh);
+    localStorage.setItem('user_role', user.role);
   }
 
   private clearStorage() {
@@ -106,6 +115,7 @@ export class AuthService {
         this.accessTokenSignal.set(response.access);
         this.refreshTokenSignal.set(response.refresh);
         this.isLoggedInSignal.set(true);
+        this.setRole(response.user.role);
         this.saveToStorage(response.user, response.access, response.refresh);
       }),
       catchError(this.handleError)
@@ -119,6 +129,7 @@ export class AuthService {
         this.accessTokenSignal.set(response.access);
         this.refreshTokenSignal.set(response.refresh);
         this.isLoggedInSignal.set(true);
+        this.setRole(response.user.role);
         this.saveToStorage(response.user, response.access, response.refresh);
       }),
       catchError(this.handleError)
@@ -139,15 +150,18 @@ export class AuthService {
     this.setRole(nextRole);
   }
 
+  getCurrentUserId(): number | null {
+    const user = this.currentUser();
+    return user ? user.id : null;
+  }
+
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred!';
     if (error.error instanceof ErrorEvent) {
       // Client-side or network error
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Backend returned an unsuccessful response code
       if (error.error && typeof error.error === 'object') {
-        // Handle Django REST framework error format
         const errors = error.error;
         if (errors.username) errorMessage = errors.username[0];
         else if (errors.email) errorMessage = errors.email[0];

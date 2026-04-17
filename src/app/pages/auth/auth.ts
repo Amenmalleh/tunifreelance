@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -33,6 +33,7 @@ export class Auth implements OnInit {
   private router = inject(Router);
   private auth = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   isSelectionStep = true;
   isLogin = true;
@@ -120,17 +121,20 @@ export class Auth implements OnInit {
       password: formValue.password,
       password2: formValue.password2,
       first_name: formValue.firstName,
-      last_name: formValue.lastName
+      last_name: formValue.lastName,
+      role: this.selectedRole || 'freelancer'
     };
 
     this.auth.signup(signupData).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open('Account created successfully!', 'Close', { duration: 3000 });
         this.router.navigate(['/jobs']);
       },
       error: (error) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open(error.message, 'Close', { duration: 5000 });
       }
     });
@@ -146,11 +150,13 @@ export class Auth implements OnInit {
     this.auth.login(loginData).subscribe({
       next: (response) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open('Logged in successfully!', 'Close', { duration: 3000 });
         this.router.navigate(['/jobs']);
       },
       error: (error) => {
         this.isLoading = false;
+        this.cdr.markForCheck();
         this.snackBar.open(error.message, 'Close', { duration: 5000 });
       }
     });
