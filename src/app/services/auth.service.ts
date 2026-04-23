@@ -2,7 +2,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, map, tap } from 'rxjs/operators';
 
 export type UserRole = 'client' | 'freelancer';
 
@@ -19,6 +19,10 @@ export interface AuthResponse {
   user: User;
   access: string;
   refresh: string;
+}
+
+interface RefreshResponse {
+  access: string;
 }
 
 export interface SignupData {
@@ -64,8 +68,10 @@ export class AuthService {
       this.roleSignal.set(savedRole);
     }
 
+    const savedAccessToken = localStorage.getItem('access_token');
+    const savedRefreshToken = localStorage.getItem('refresh_token');
     const savedUser = localStorage.getItem('user');
-    if (savedUser) {
+    if (savedUser && (savedAccessToken || savedRefreshToken)) {
       try {
         const parsedUser = JSON.parse(savedUser) as User;
         this.userSignal.set(parsedUser);
@@ -78,12 +84,10 @@ export class AuthService {
       }
     }
 
-    const savedAccessToken = localStorage.getItem('access_token');
     if (savedAccessToken) {
       this.accessTokenSignal.set(savedAccessToken);
     }
 
-    const savedRefreshToken = localStorage.getItem('refresh_token');
     if (savedRefreshToken) {
       this.refreshTokenSignal.set(savedRefreshToken);
     }
@@ -143,6 +147,42 @@ export class AuthService {
     this.isLoggedInSignal.set(false);
     this.clearStorage();
     this.router.navigate(['/signin']);
+  }
+
+  clearInvalidToken() {
+    this.accessTokenSignal.set(null);
+    localStorage.removeItem('access_token');
+
+    const refresh = this.refreshTokenSignal() ?? localStorage.getItem('refresh_token');
+    if (!refresh) {
+      this.isLoggedInSignal.set(false);
+    }
+  }
+
+  hasRefreshToken(): boolean {
+    return Boolean(this.refreshTokenSignal() ?? localStorage.getItem('refresh_token'));
+  }
+
+  refreshAccessToken(): Observable<string> {
+    const refresh = this.refreshTokenSignal() ?? localStorage.getItem('refresh_token');
+
+    if (!refresh) {
+      this.logout();
+      return throwError(() => new Error('No refresh token available.'));
+    }
+
+    return this.http.post<RefreshResponse>(`${this.API_URL}/token/refresh/`, { refresh }).pipe(
+      tap(response => {
+        this.accessTokenSignal.set(response.access);
+        localStorage.setItem('access_token', response.access);
+        this.isLoggedInSignal.set(true);
+      }),
+      map(response => response.access),
+      catchError((error) => {
+        this.logout();
+        return this.handleError(error);
+      })
+    );
   }
 
   toggleRole() {

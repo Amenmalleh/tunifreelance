@@ -1,0 +1,177 @@
+<div class="manage-proposals-page">
+  <div class="container">
+    <mat-card class="proposals-card glass">
+      <div class="proposals-header">
+        <h2>Manage Proposals</h2>
+        <p class="subtitle">Review and manage proposals from freelancers</p>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading proposals...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && proposals.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <h3>No proposals yet</h3>
+        <p>Post a job to receive proposals from freelancers</p>
+      </div>
+
+      <!-- Proposals Tabs -->
+      <mat-tab-group *ngIf="!isLoading && proposals.length > 0">
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span [matBadge]="getPendingCount()" matBadgeColor="warn" matBadgeSize="small" class="tab-label">
+              <mat-icon>pending_actions</mat-icon>
+              Pending
+            </span>
+          </ng-template>
+
+          <div class="proposals-list">
+            @for (proposal of proposals | filter:'pending'; track proposal.id) {
+            <mat-card class="proposal-card" (click)="openProposalDetails(proposal)">
+              <div class="proposal-header-row">
+                <div class="proposal-info">
+                  <h4 class="freelancer-name">{{ proposal.freelance }}</h4>
+                  <span class="job-title">{{ proposal.job_offer_title }}</span>
+                  <span class="proposal-date">{{ formatDate(proposal.created_at) }}</span>
+                </div>
+                <mat-chip-set aria-label="Status">
+                  <mat-chip [color]="getStatusColor(proposal.status)" selected>
+                    {{ getStatusLabel(proposal.status) }}
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <div class="proposal-content">
+                <p class="proposal-message">{{ proposal.message | slice:0:150 }}...</p>
+              </div>
+
+              <div class="proposal-pricing">
+                <div class="price-item">
+                  <span class="label">Proposed Price:</span>
+                  <span class="value">{{ formatPrice(proposal.proposed_price) }}</span>
+                </div>
+                <div class="price-item">
+                  <span class="label">Deadline:</span>
+                  <span class="value">{{ formatDate(proposal.proposed_deadline) }}</span>
+                </div>
+              </div>
+
+              <div class="proposal-actions">
+                <button mat-raised-button color="accent" (click)="acceptProposal(proposal, $event)">
+                  <mat-icon>check</mat-icon>
+                  Accept
+                </button>
+                <button mat-raised-button (click)="rejectProposal(proposal, $event)">
+                  <mat-icon>close</mat-icon>
+                  Reject
+                </button>
+              </div>
+            </mat-card>
+            }
+          </div>
+        </mat-tab>
+
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span [matBadge]="getAcceptedCount()" matBadgeColor="accent" matBadgeSize="small" class="tab-label">
+              <mat-icon>done_all</mat-icon>
+              Accepted
+            </span>
+          </ng-template>
+
+          <div class="proposals-list">
+            @for (proposal of proposals | filter:'accepted'; track proposal.id) {
+            <mat-card class="proposal-card accepted" (click)="openProposalDetails(proposal)">
+              <div class="proposal-header-row">
+                <div class="proposal-info">
+                  <h4 class="freelancer-name">{{ proposal.freelance }}</h4>
+                  <span class="job-title">{{ proposal.job_offer_title }}</span>
+                  <span class="proposal-date">{{ formatDate(proposal.created_at) }}</span>
+                </div>
+                <mat-chip-set aria-label="Status">
+                  <mat-chip color="accent" selected>
+                    {{ getStatusLabel(proposal.status) }}
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <div class="proposal-content">
+                <p class="proposal-message">{{ proposal.message | slice:0:150 }}...</p>
+              </div>
+
+              <div class="proposal-pricing">
+                <div class="price-item">
+                  <span class="label">Contract Price:</span>
+                  <span class="value contract-price">{{ formatPrice(proposal.proposed_price) }}</span>
+                </div>
+                <div class="price-item">
+                  <span class="label">Deadline:</span>
+                  <span class="value">{{ formatDate(proposal.proposed_deadline) }}</span>
+                </div>
+              </div>
+
+              <div class="contract-status">
+                <mat-icon>lock</mat-icon>
+                <span>Amount locked until project completion</span>
+              </div>
+            </mat-card>
+            }
+          </div>
+        </mat-tab>
+
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <span [matBadge]="getRejectedCount()" matBadgeSize="small" class="tab-label">
+              <mat-icon>block</mat-icon>
+              Rejected
+            </span>
+          </ng-template>
+
+          <div class="proposals-list">
+            @for (proposal of proposals | filter:'rejected'; track proposal.id) {
+            <mat-card class="proposal-card rejected" (click)="openProposalDetails(proposal)">
+              <div class="proposal-header-row">
+                <div class="proposal-info">
+                  <h4 class="freelancer-name">{{ proposal.freelance }}</h4>
+                  <span class="job-title">{{ proposal.job_offer_title }}</span>
+                  <span class="proposal-date">{{ formatDate(proposal.created_at) }}</span>
+                </div>
+                <mat-chip-set aria-label="Status">
+                  <mat-chip selected>
+                    {{ getStatusLabel(proposal.status) }}
+                  </mat-chip>
+                </mat-chip-set>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <div class="proposal-content">
+                <p class="proposal-message">{{ proposal.message | slice:0:150 }}...</p>
+              </div>
+
+              <div class="proposal-pricing">
+                <div class="price-item">
+                  <span class="label">Proposed Price:</span>
+                  <span class="value">{{ formatPrice(proposal.proposed_price) }}</span>
+                </div>
+                <div class="price-item">
+                  <span class="label">Deadline:</span>
+                  <span class="value">{{ formatDate(proposal.proposed_deadline) }}</span>
+                </div>
+              </div>
+            </mat-card>
+            }
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </mat-card>
+  </div>
+</div>

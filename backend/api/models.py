@@ -58,6 +58,7 @@ class Proposal(models.Model):
     job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE, related_name='proposals')
     message = models.TextField()
     proposed_price = models.DecimalField(max_digits=10, decimal_places=2)
+    proposed_deadline = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -82,6 +83,38 @@ class Message(models.Model):
 
     def __str__(self):
         return f'Message from {self.sender.username} to {self.recipient.username}'
+
+
+class Contract(models.Model):
+    STATUS_ACTIVE = 'active'
+    STATUS_COMPLETED = 'completed'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES = [
+        (STATUS_ACTIVE, 'Actif'),
+        (STATUS_COMPLETED, 'Complété'),
+        (STATUS_CANCELLED, 'Annulé'),
+    ]
+
+    proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE, related_name='contract')
+    job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE, related_name='contracts')
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='active_contracts')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='issued_contracts')
+    
+    contract_price = models.DecimalField(max_digits=10, decimal_places=2)  # Final agreed price
+    contract_deadline = models.DateField()  # Final agreed deadline
+    
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_ACTIVE)
+    amount_locked = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Amount blocked until completion
+    is_completed = models.BooleanField(default=False)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Contract: {self.job_offer.title} - {self.freelancer.username}'
 
 
 @receiver(post_save, sender=User)

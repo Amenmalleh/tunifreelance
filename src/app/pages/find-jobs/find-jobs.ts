@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -38,6 +38,7 @@ export class FindJobs implements OnInit {
   private jobService = inject(JobService);
   private router = inject(Router);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   jobs: JobOffer[] = [];
   filteredJobs: JobOffer[] = [];
@@ -57,6 +58,7 @@ export class FindJobs implements OnInit {
         this.jobs = data;
         this.filteredJobs = data;
         this.isLoading = false;
+        this.cdr.markForCheck();
       },
       error: (err) => {
         console.error('Error loading jobs:', err);
@@ -65,6 +67,7 @@ export class FindJobs implements OnInit {
         // Fallback to empty array
         this.jobs = [];
         this.filteredJobs = [];
+        this.cdr.markForCheck();
       }
     });
   }

@@ -49,7 +49,7 @@
       </aside>
 
       <!-- Chat Area (Main Content) -->
-      <main class="chat-area" *ngIf="selectedConversationId; else selectConversation">
+      <main class="chat-area" *ngIf="selectedConversationId; else noConversationSelected">
         <div class="chat-header">
           <h3>{{ getConversationName(selectedConversationId) }}</h3>
         </div>
@@ -90,7 +90,7 @@
       </main>
 
       <!-- Placeholder when no conversation is selected -->
-      <ng-template #selectConversation>
+      <ng-template #noConversationSelected>
         <div class="chat-area-placeholder">
           <mat-icon>mail_outline</mat-icon>
           <h3>Open a conversation</h3>

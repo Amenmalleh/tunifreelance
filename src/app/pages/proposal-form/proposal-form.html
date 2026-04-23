@@ -18,13 +18,21 @@
         <form [formGroup]="proposalForm" (ngSubmit)="submitProposal()" class="proposal-form">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Proposal Message</mat-label>
-            <textarea matInput formControlName="message" rows="6" placeholder="Explain how you will complete this job."></textarea>
+            <textarea matInput formControlName="message" rows="6" placeholder="Explain how you will complete this job. Minimum 20 characters."></textarea>
+            <mat-icon matSuffix>message</mat-icon>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Proposed Price (DT)</mat-label>
             <input matInput type="number" formControlName="proposedPrice" placeholder="e.g. 2500">
             <mat-icon matSuffix>paid</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Proposed Deadline</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="proposedDeadline">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
           </mat-form-field>
 
           <button mat-raised-button color="primary" type="submit" [disabled]="proposalForm.invalid || isLoading">

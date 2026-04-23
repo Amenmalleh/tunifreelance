@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
-from .models import Profile, JobOffer, Proposal, Message
+from .models import Profile, JobOffer, Proposal, Message, Contract
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -63,7 +63,7 @@ class ProposalSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Proposal
-        fields = ('id', 'freelance', 'freelance_role', 'job_offer', 'job_offer_title', 'message', 'proposed_price', 'status', 'created_at')
+        fields = ('id', 'freelance', 'freelance_role', 'job_offer', 'job_offer_title', 'message', 'proposed_price', 'proposed_deadline', 'status', 'created_at')
         read_only_fields = ('id', 'freelance', 'freelance_role', 'job_offer_title', 'status', 'created_at')
 
 
@@ -77,3 +77,15 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ('id', 'sender', 'sender_id', 'recipient', 'recipient_id', 'proposal', 'job_offer', 'content', 'created_at', 'is_read')
         read_only_fields = ('id', 'sender', 'sender_id', 'recipient', 'recipient_id', 'created_at')
+
+
+class ContractSerializer(serializers.ModelSerializer):
+    freelancer = serializers.ReadOnlyField(source='freelancer.username')
+    client = serializers.ReadOnlyField(source='client.username')
+    job_title = serializers.CharField(source='job_offer.title', read_only=True)
+    proposal_details = ProposalSerializer(source='proposal', read_only=True)
+
+    class Meta:
+        model = Contract
+        fields = ('id', 'proposal', 'job_offer', 'freelancer', 'client', 'job_title', 'contract_price', 'contract_deadline', 'status', 'amount_locked', 'is_completed', 'proposal_details', 'created_at', 'completed_at')
+        read_only_fields = ('id', 'freelancer', 'client', 'job_title', 'created_at', 'completed_at', 'proposal_details')
