@@ -8,7 +8,7 @@
       <div class="main-search-container">
         <div class="premium-search-box">
           <mat-icon>person_search</mat-icon>
-          <input type="text" placeholder="Search for talent (Angular, UI/UX, React...)" 
+          <input type="text" placeholder="Search for talent (Angular, UI/UX, React...)"
                  [(ngModel)]="headerSearchText" (keyup.enter)="headerSearch()">
           <button mat-raised-button color="primary" (click)="headerSearch()">Search</button>
         </div>
@@ -32,14 +32,14 @@
 
       <div class="sidebar-card filter-card glass">
         <h3>Filter by</h3>
-        
+
         <div class="filter-section">
           <label>Search</label>
           <mat-form-field appearance="outline" class="search-filter-field">
             <mat-label>Search talent...</mat-label>
-            <input matInput 
-              placeholder="Name, skills..." 
-              [(ngModel)]="searchText" 
+            <input matInput
+              placeholder="Name, skills..."
+              [(ngModel)]="searchText"
               (keyup.enter)="search()">
             <button mat-icon-button matSuffix (click)="search()">
               <mat-icon>search</mat-icon>
@@ -48,10 +48,24 @@
         </div>
 
         <div class="filter-section">
+          <label>Location</label>
+          <mat-form-field appearance="outline" class="search-filter-field">
+            <mat-label>Search location...</mat-label>
+            <input matInput
+              placeholder="City, Country..."
+              [(ngModel)]="locationText"
+              (keyup.enter)="search()">
+            <button mat-icon-button matSuffix (click)="search()">
+              <mat-icon>location_on</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-section">
           <label>Category</label>
           <div class="filter-buttons">
             @for (category of categories; track category) {
-            <button 
+            <button
               mat-stroked-button
               [class.active]="selectedCategory === category"
               (click)="filterByCategory(category)"
@@ -125,6 +139,10 @@
                 <div class="talent-details">
                   <h3 class="talent-name">{{talent.first_name}} {{talent.last_name}}</h3>
                   <p class="talent-title">{{talent.title}}</p>
+                  <div class="talent-meta-info" style="margin-bottom: 5px; color: #666; font-size: 0.9em;">
+                    <span *ngIf="talent.category" style="margin-right: 10px;">{{talent.category}}</span>
+                    <span *ngIf="talent.location"><mat-icon inline="true" style="font-size: 16px; vertical-align: middle;">location_on</mat-icon> {{talent.location}}</span>
+                  </div>
                   <div class="talent-badges">
                     <span class="badge" *ngIf="talent.profile_completed === 100">
                       <mat-icon>verified</mat-icon> Verified
@@ -157,9 +175,9 @@
                 <mat-icon>check_circle</mat-icon>
                 <span>Profile {{talent.profile_completed}}% Complete</span>
               </div>
-              <button 
-                mat-raised-button 
-                color="primary" 
+              <button
+                mat-raised-button
+                color="primary"
                 class="invite-btn"
                 (click)="inviteToJob(talent.id)">
                 Invite to Project

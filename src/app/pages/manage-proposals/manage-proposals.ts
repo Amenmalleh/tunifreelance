@@ -82,11 +82,11 @@ export class ManageProposals implements OnInit {
   getStatusLabel(status: string): string {
     switch (status) {
       case 'pending':
-        return 'En attente';
+        return 'Pending';
       case 'accepted':
-        return 'Acceptée';
+        return 'Accepted';
       case 'rejected':
-        return 'Rejetée';
+        return 'Rejected';
       default:
         return status;
     }

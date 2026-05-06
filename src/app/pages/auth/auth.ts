@@ -82,16 +82,19 @@ export class Auth implements OnInit {
       this.authForm.get('firstName')?.clearValidators();
       this.authForm.get('lastName')?.clearValidators();
       this.authForm.get('password2')?.clearValidators();
+      this.authForm.get('email')?.clearValidators();
       this.authForm.get('username')?.setValidators([Validators.required]);
     } else {
       this.authForm.get('firstName')?.setValidators([Validators.required]);
       this.authForm.get('lastName')?.setValidators([Validators.required]);
       this.authForm.get('password2')?.setValidators([Validators.required]);
+      this.authForm.get('email')?.setValidators([Validators.required, Validators.email]);
       this.authForm.get('username')?.setValidators([Validators.required]);
     }
     this.authForm.get('firstName')?.updateValueAndValidity();
     this.authForm.get('lastName')?.updateValueAndValidity();
     this.authForm.get('password2')?.updateValueAndValidity();
+    this.authForm.get('email')?.updateValueAndValidity();
     this.authForm.get('username')?.updateValueAndValidity();
   }
 

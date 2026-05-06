@@ -14,6 +14,7 @@ class Profile(models.Model):
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_FREELANCER)
+    location = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return f'{self.user.username} ({self.role})'
@@ -23,13 +24,14 @@ class JobOffer(models.Model):
     STATUS_OPEN = 'open'
     STATUS_CLOSED = 'closed'
     STATUS_CHOICES = [
-        (STATUS_OPEN, 'Ouvert'),
-        (STATUS_CLOSED, 'Fermé'),
+        (STATUS_OPEN, 'Open'),
+        (STATUS_CLOSED, 'Closed'),
     ]
 
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_offers')
     title = models.CharField(max_length=255)
     category = models.CharField(max_length=100, blank=True)
+    location = models.CharField(max_length=100, blank=True)
     description = models.TextField()
     budget = models.DecimalField(max_digits=10, decimal_places=2)
     deadline = models.DateField()
@@ -49,9 +51,9 @@ class Proposal(models.Model):
     STATUS_ACCEPTED = 'accepted'
     STATUS_REJECTED = 'rejected'
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'En attente'),
-        (STATUS_ACCEPTED, 'Accepté'),
-        (STATUS_REJECTED, 'Refusé'),
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ACCEPTED, 'Accepted'),
+        (STATUS_REJECTED, 'Rejected'),
     ]
 
     freelance = models.ForeignKey(User, on_delete=models.CASCADE, related_name='proposals')
@@ -90,9 +92,9 @@ class Contract(models.Model):
     STATUS_COMPLETED = 'completed'
     STATUS_CANCELLED = 'cancelled'
     STATUS_CHOICES = [
-        (STATUS_ACTIVE, 'Actif'),
-        (STATUS_COMPLETED, 'Complété'),
-        (STATUS_CANCELLED, 'Annulé'),
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_CANCELLED, 'Cancelled'),
     ]
 
     proposal = models.OneToOneField(Proposal, on_delete=models.CASCADE, related_name='contract')
@@ -119,13 +121,13 @@ class Contract(models.Model):
 
 class Notification(models.Model):
     TYPE_CHOICES = [
-        ('proposal_received', 'Nouvelle proposition reçue'),
-        ('proposal_accepted', 'Proposition acceptée'),
-        ('proposal_rejected', 'Proposition rejetée'),
-        ('message_received', 'Nouveau message'),
-        ('contract_created', 'Contrat créé'),
-        ('contract_completed', 'Contrat complété'),
-        ('contract_cancelled', 'Contrat annulé'),
+        ('proposal_received', 'New proposal received'),
+        ('proposal_accepted', 'Proposal accepted'),
+        ('proposal_rejected', 'Proposal rejected'),
+        ('message_received', 'New message'),
+        ('contract_created', 'Contract created'),
+        ('contract_completed', 'Contract completed'),
+        ('contract_cancelled', 'Contract cancelled'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')

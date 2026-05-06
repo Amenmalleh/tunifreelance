@@ -264,6 +264,10 @@ class JobOfferViewSet(viewsets.ModelViewSet):
         if max_budget:
             queryset = queryset.filter(budget__lte=max_budget)
 
+        location = self.request.query_params.get('location', '')
+        if location:
+            queryset = queryset.filter(location__icontains=location)
+
         sort = self.request.query_params.get('sort', '-created_at')
         if sort in ['created_at', '-created_at', 'budget', '-budget', 'deadline', '-deadline']:
             queryset = queryset.order_by(sort)
@@ -306,8 +310,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
         create_notification(
             user=proposal.job_offer.client,
             notification_type='proposal_received',
-            title=f'Nouvelle proposition de {self.request.user.username}',
-            message=f'Pour le projet "{proposal.job_offer.title}" — {proposal.proposed_price} TND',
+            title=f'New proposal from {self.request.user.username}',
+            message=f'For the project "{proposal.job_offer.title}" — {proposal.proposed_price} DT',
             link=f'/proposals'
         )
 
@@ -359,8 +363,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
             create_notification(
                 user=proposal.freelance,
                 notification_type='proposal_accepted',
-                title='Proposition acceptée !',
-                message=f'Votre proposition pour "{proposal.job_offer.title}" a été acceptée.',
+                title='Proposal accepted!',
+                message=f'Your proposal for "{proposal.job_offer.title}" has been accepted.',
                 link='/dashboard'
             )
 
@@ -393,8 +397,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
         create_notification(
             user=proposal.freelance,
             notification_type='proposal_rejected',
-            title='Proposition rejetée',
-            message=f'Votre proposition pour "{proposal.job_offer.title}" a été rejetée.',
+            title='Proposal rejected',
+            message=f'Your proposal for "{proposal.job_offer.title}" has been rejected.',
             link='/dashboard'
         )
 
@@ -445,7 +449,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         create_notification(
             user=msg.recipient,
             notification_type='message_received',
-            title=f'Nouveau message de {self.request.user.username}',
+            title=f'New message from {self.request.user.username}',
             message=msg.content[:100],
             link='/messages'
         )
@@ -506,8 +510,8 @@ class ContractViewSet(viewsets.ModelViewSet):
         create_notification(
             user=other_user,
             notification_type='contract_completed',
-            title='Contrat complété',
-            message=f'Le contrat pour "{contract.job_offer.title}" a été marqué comme complété.',
+            title='Contract completed',
+            message=f'The contract for "{contract.job_offer.title}" has been marked as completed.',
             link='/dashboard'
         )
 
@@ -540,8 +544,8 @@ class ContractViewSet(viewsets.ModelViewSet):
         create_notification(
             user=contract.freelancer,
             notification_type='contract_cancelled',
-            title='Contrat annulé',
-            message=f'Le contrat pour "{contract.job_offer.title}" a été annulé par le client.',
+            title='Contract cancelled',
+            message=f'The contract for "{contract.job_offer.title}" has been cancelled by the client.',
             link='/dashboard'
         )
 

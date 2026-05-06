@@ -43,16 +43,17 @@ export class PostJob {
 
   isSubmitting = false;
   categories = [
-    { value: 'web', label: 'Web & Mobile Development' },
-    { value: 'design', label: 'Design & Creative' },
-    { value: 'marketing', label: 'Digital Marketing' },
-    { value: 'admin', label: 'Admin Support' },
-    { value: 'data', label: 'Data Science' }
+    { value: 'Development', label: 'Development' },
+    { value: 'Design', label: 'Design' },
+    { value: 'Marketing', label: 'Marketing' },
+    { value: 'Admin Support', label: 'Admin Support' },
+    { value: 'Data Science', label: 'Data Science' }
   ];
 
   titleForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(10)]],
-    category: ['web', [Validators.required]]
+    category: ['Development', [Validators.required]],
+    location: ['', [Validators.required]]
   });
 
   detailsForm = this.fb.group({
@@ -91,6 +92,7 @@ export class PostJob {
     const payload: CreateJobOfferPayload = {
       title: titleData.title!,
       category: titleData.category!,
+      location: titleData.location!,
       description: detailsData.description!,
       budget: budget,
       deadline: deadline

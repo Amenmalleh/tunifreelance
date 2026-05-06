@@ -21,6 +21,8 @@ export interface Freelancer {
   last_name: string;
   avatar?: string;
   title?: string;
+  category?: string;
+  location?: string;
   skills?: string[];
   rating?: number;
   hourly_rate?: number;
@@ -61,6 +63,7 @@ export class FindTalent implements OnInit {
   selectedCategory = '';
   searchText = '';
   headerSearchText = '';
+  locationText = '';
   sortBy = '-rating';
   minRate: number | null = null;
   maxRate: number | null = null;
@@ -71,7 +74,7 @@ export class FindTalent implements OnInit {
 
   loadTalent() {
     this.isLoading = true;
-    
+
     // Sample data - TODO: Replace with actual backend API call
     this.freelancers = [
       {
@@ -81,6 +84,8 @@ export class FindTalent implements OnInit {
         last_name: 'Ali',
         avatar: 'MA',
         title: 'Expert Angular Developer',
+        category: 'Development',
+        location: 'Tunis, Tunisia',
         skills: ['Angular', 'RxJS', 'NgRx', 'TypeScript', 'Web Performance'],
         rating: 4.9,
         hourly_rate: 65,
@@ -94,6 +99,8 @@ export class FindTalent implements OnInit {
         last_name: 'Ben Romdhane',
         avatar: 'AB',
         title: 'UI/UX Designer',
+        category: 'Design',
+        location: 'Sousse, Tunisia',
         skills: ['Figma', 'UI Design', 'UX Research', 'Prototyping', 'Design Systems'],
         rating: 5.0,
         hourly_rate: 50,
@@ -107,6 +114,8 @@ export class FindTalent implements OnInit {
         last_name: 'Mansour',
         avatar: 'YM',
         title: 'Fullstack Developer',
+        category: 'Development',
+        location: 'Sfax, Tunisia',
         skills: ['React', 'Node.js', 'PostgreSQL', 'Docker', 'AWS'],
         rating: 4.8,
         hourly_rate: 55,
@@ -114,7 +123,7 @@ export class FindTalent implements OnInit {
         profile_completed: 90
       }
     ];
-    
+
     this.applyFilters();
     this.isLoading = false;
     this.cdr.markForCheck();
@@ -122,17 +131,26 @@ export class FindTalent implements OnInit {
 
   applyFilters() {
     let filtered = [...this.freelancers];
-    
+
     const searchQuery = this.searchText || this.headerSearchText;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(f => 
+      filtered = filtered.filter(f =>
         f.first_name.toLowerCase().includes(query) ||
         f.last_name.toLowerCase().includes(query) ||
         f.title?.toLowerCase().includes(query) ||
         f.bio?.toLowerCase().includes(query) ||
         f.skills?.some(s => s.toLowerCase().includes(query))
       );
+    }
+
+    if (this.selectedCategory) {
+      filtered = filtered.filter(f => f.category === this.selectedCategory);
+    }
+
+    if (this.locationText) {
+      const loc = this.locationText.toLowerCase();
+      filtered = filtered.filter(f => f.location?.toLowerCase().includes(loc));
     }
 
     if (this.minRate) {
@@ -174,6 +192,7 @@ export class FindTalent implements OnInit {
     this.selectedCategory = '';
     this.searchText = '';
     this.headerSearchText = '';
+    this.locationText = '';
     this.minRate = null;
     this.maxRate = null;
     this.sortBy = '-rating';

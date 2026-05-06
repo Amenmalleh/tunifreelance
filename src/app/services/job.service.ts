@@ -8,6 +8,7 @@ export interface JobOffer {
   client_role: string;
   title: string;
   category: string;
+  location?: string;
   description: string;
   budget: number;
   deadline: string;
@@ -19,6 +20,7 @@ export interface JobOffer {
 export interface CreateJobOfferPayload {
   title: string;
   category: string;
+  location?: string;
   description: string;
   budget: number;
   deadline: string;
@@ -27,6 +29,7 @@ export interface CreateJobOfferPayload {
 export interface JobSearchFilters {
   search?: string;
   category?: string;
+  location?: string;
   min_budget?: number;
   max_budget?: number;
   sort?: string;
@@ -45,6 +48,7 @@ export class JobService {
     if (filters) {
       if (filters.search) params = params.set('search', filters.search);
       if (filters.category) params = params.set('category', filters.category);
+      if (filters.location) params = params.set('location', filters.location);
       if (filters.min_budget) params = params.set('min_budget', filters.min_budget.toString());
       if (filters.max_budget) params = params.set('max_budget', filters.max_budget.toString());
       if (filters.sort) params = params.set('sort', filters.sort);

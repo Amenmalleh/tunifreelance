@@ -48,6 +48,20 @@
         </div>
 
         <div class="filter-section">
+          <label>Location</label>
+          <mat-form-field appearance="outline" class="search-filter-field">
+            <mat-label>Search location...</mat-label>
+            <input matInput
+              placeholder="City, Country..."
+              [(ngModel)]="locationText"
+              (keyup.enter)="search()">
+            <button mat-icon-button matSuffix (click)="search()">
+              <mat-icon>location_on</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-section">
           <label>Category</label>
           <div class="filter-buttons">
             @for (category of categories; track category) {
@@ -138,6 +152,8 @@
                   <span class="time-posted">Posted <strong>{{job.created_at | date:'short'}}</strong></span>
                   <span class="separator">•</span>
                   <span class="category-badge">{{job.category}}</span>
+                  <span class="separator" *ngIf="job.location">•</span>
+                  <span class="location" *ngIf="job.location"><mat-icon inline="true">location_on</mat-icon> {{job.location}}</span>
                 </div>
               </div>
               <button mat-icon-button class="save-icon" (click)="saveJob(job.id)">

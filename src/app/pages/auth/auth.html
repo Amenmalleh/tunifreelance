@@ -83,11 +83,13 @@
           </div>
         </ng-container>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email" placeholder="example@email.com" required>
-          <mat-icon matSuffix>email</mat-icon>
-        </mat-form-field>
+        <ng-container *ngIf="!isLogin">
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="example@email.com" required>
+            <mat-icon matSuffix>email</mat-icon>
+          </mat-form-field>
+        </ng-container>
 
         <mat-form-field appearance="outline">
           <mat-label>Password</mat-label>

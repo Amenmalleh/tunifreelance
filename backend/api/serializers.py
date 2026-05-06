@@ -9,10 +9,11 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
     role = serializers.ChoiceField(choices=Profile.ROLE_CHOICES, write_only=True, required=False, default=Profile.ROLE_FREELANCER)
+    location = serializers.CharField(write_only=True, required=False, default='', allow_blank=True)
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'password', 'password2', 'email', 'first_name', 'last_name', 'role')
+        fields = ('id', 'username', 'password', 'password2', 'email', 'first_name', 'last_name', 'role', 'location')
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -21,6 +22,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         role = validated_data.pop('role', Profile.ROLE_FREELANCER)
+        location = validated_data.pop('location', '')
         validated_data.pop('password2', None)
 
         user = User.objects.create(
@@ -31,13 +33,14 @@ class UserSerializer(serializers.ModelSerializer):
         )
         user.set_password(validated_data['password'])
         user.save()
-        Profile.objects.update_or_create(user=user, defaults={'role': role})
+        Profile.objects.update_or_create(user=user, defaults={'role': role, 'location': location})
         return user
 
     def to_representation(self, instance):
         profile, _ = Profile.objects.get_or_create(user=instance)
         representation = super().to_representation(instance)
         representation['role'] = profile.role
+        representation['location'] = profile.location
         return representation
 
 
@@ -52,7 +55,7 @@ class JobOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobOffer
-        fields = ('id', 'client', 'client_role', 'title', 'category', 'description', 'budget', 'deadline', 'status', 'created_at', 'updated_at')
+        fields = ('id', 'client', 'client_role', 'title', 'category', 'location', 'description', 'budget', 'deadline', 'status', 'created_at', 'updated_at')
         read_only_fields = ('id', 'client', 'client_role', 'created_at', 'updated_at')
 
 

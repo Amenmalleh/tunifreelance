@@ -45,10 +45,11 @@ export class FindJobs implements OnInit {
   jobs: JobOffer[] = [];
   filteredJobs: JobOffer[] = [];
   isLoading = true;
-  categories = ['Web & Mobile Development', 'Design & Creative', 'Digital Marketing', 'Admin Support', 'Data Science'];
+  categories = ['Development', 'Design', 'Marketing', 'Admin Support', 'Data Science'];
   selectedCategory = '';
   searchText = '';
   headerSearchText = '';
+  locationText = '';
   sortBy = '-created_at';
   minBudget: number | null = null;
   maxBudget: number | null = null;
@@ -64,6 +65,7 @@ export class FindJobs implements OnInit {
     const searchQuery = this.searchText || this.headerSearchText;
     if (searchQuery) filters.search = searchQuery;
     if (this.selectedCategory) filters.category = this.selectedCategory;
+    if (this.locationText) filters.location = this.locationText;
     if (this.minBudget) filters.min_budget = this.minBudget;
     if (this.maxBudget) filters.max_budget = this.maxBudget;
     if (this.sortBy) filters.sort = this.sortBy;
@@ -104,6 +106,7 @@ export class FindJobs implements OnInit {
     this.selectedCategory = '';
     this.searchText = '';
     this.headerSearchText = '';
+    this.locationText = '';
     this.minBudget = null;
     this.maxBudget = null;
     this.sortBy = '-created_at';

@@ -20,12 +20,16 @@
             <mat-form-field appearance="outline" class="full-width">
               <mat-label>Category</mat-label>
               <mat-select formControlName="category" required>
-                <mat-option value="web">Web & Mobile Development</mat-option>
-                <mat-option value="design">Design & Creative</mat-option>
-                <mat-option value="marketing">Digital Marketing</mat-option>
-                <mat-option value="admin">Admin Support</mat-option>
-                <mat-option value="data">Data Science</mat-option>
+                @for (cat of categories; track cat.value) {
+                  <mat-option [value]="cat.value">{{cat.label}}</mat-option>
+                }
               </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Job Location</mat-label>
+              <input matInput formControlName="location" placeholder="e.g. Tunis, Remote, Paris" required>
+              <mat-icon matSuffix>location_on</mat-icon>
             </mat-form-field>
           </div>
           <div class="stepper-actions">
