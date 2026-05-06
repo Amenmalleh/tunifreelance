@@ -1,0 +1,112 @@
+<div class="post-job-page">
+  <div class="container page-header">
+    <h1 class="gradient-text">Post a New Job</h1>
+    <p>Finding the right talent in Tunisia starts with a great job post.</p>
+  </div>
+
+  <div class="container container-stepper glass">
+    <mat-stepper orientation="vertical" #stepper>
+      <!-- Step 1: Title -->
+      <mat-step [stepControl]="titleForm">
+        <form [formGroup]="titleForm">
+          <ng-template matStepLabel>Job Title & Category</ng-template>
+          <div class="form-section">
+            <p class="section-hint">Give your job a clear and professional title.</p>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Job Title</mat-label>
+              <input matInput formControlName="title" placeholder="e.g. Senior Angular Developer for FinTech Project" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Category</mat-label>
+              <mat-select formControlName="category" required>
+                <mat-option value="web">Web & Mobile Development</mat-option>
+                <mat-option value="design">Design & Creative</mat-option>
+                <mat-option value="marketing">Digital Marketing</mat-option>
+                <mat-option value="admin">Admin Support</mat-option>
+                <mat-option value="data">Data Science</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="stepper-actions">
+            <button mat-raised-button color="primary" matStepperNext>Next: Details</button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- Step 2: Details -->
+      <mat-step [stepControl]="detailsForm">
+        <form [formGroup]="detailsForm">
+          <ng-template matStepLabel>Job Description & Skills</ng-template>
+          <div class="form-section">
+            <p class="section-hint">Provide detailed requirements and expectations.</p>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Job Description</mat-label>
+              <textarea matInput formControlName="description" rows="6" placeholder="Describe the project, scope, and key deliverables..." required></textarea>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Preferred Skills</mat-label>
+              <input matInput formControlName="skills" placeholder="e.g. Angular, Node.js, MySQL, Docker">
+              <mat-hint>Separate skills with commas</mat-hint>
+            </mat-form-field>
+          </div>
+          <div class="stepper-actions">
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-raised-button color="primary" matStepperNext>Next: Budget</button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- Step 3: Budget (Tunisian Dinars) -->
+      <mat-step [stepControl]="budgetForm">
+        <form [formGroup]="budgetForm">
+          <ng-template matStepLabel>Budget & Deadline (TND)</ng-template>
+          <div class="form-section">
+            <p class="section-hint">Choose how you want to pay (all amounts in **Dinars Tunisiens**) and set a deadline.</p>
+            <div class="job-type-selector">
+              <button type="button" mat-stroked-button [class.active]="budgetForm.get('jobType')?.value === 'hourly'" (click)="budgetForm.get('jobType')?.setValue('hourly')">Hourly Rate</button>
+              <button type="button" mat-stroked-button [class.active]="budgetForm.get('jobType')?.value === 'fixed'" (click)="budgetForm.get('jobType')?.setValue('fixed')">Fixed Price</button>
+            </div>
+
+            <div class="budget-inputs" *ngIf="budgetForm.get('jobType')?.value === 'hourly'">
+              <mat-form-field appearance="outline">
+                <mat-label>Minimum (DT / hr)</mat-label>
+                <input matInput type="number" formControlName="minBudget" placeholder="0" required>
+                <span matSuffix>DT</span>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Maximum (DT / hr)</mat-label>
+                <input matInput type="number" formControlName="maxBudget" placeholder="0">
+                <span matSuffix>DT</span>
+              </mat-form-field>
+            </div>
+
+            <div class="budget-inputs" *ngIf="budgetForm.get('jobType')?.value === 'fixed'">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Total Project Budget (DT)</mat-label>
+                <input matInput type="number" formControlName="minBudget" placeholder="0" required>
+                <span matSuffix>DT</span>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Deadline</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="deadline" required readonly>
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+          <div class="stepper-actions">
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-raised-button color="primary" (click)="submitJob()" [disabled]="isSubmitting">
+              <span *ngIf="!isSubmitting">Post Job Now</span>
+              <span *ngIf="isSubmitting">Posting...</span>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+    </mat-stepper>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+<div class="talent-dashboard">
+  <header class="dashboard-header">
+    <div class="container header-content">
+      <div class="welcome-section">
+        <h1 class="greeting">Find the best talent</h1>
+        <p class="subtitle">Connect with top professionals for your projects</p>
+      </div>
+      <div class="main-search-container">
+        <div class="premium-search-box">
+          <mat-icon>person_search</mat-icon>
+          <input type="text" placeholder="Search for talent (Angular, UI/UX, React...)" 
+                 [(ngModel)]="headerSearchText" (keyup.enter)="headerSearch()">
+          <button mat-raised-button color="primary" (click)="headerSearch()">Search</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container dashboard-grid">
+    <!-- Sidebar: Filters & Stats -->
+    <aside class="sidebar">
+      <div class="sidebar-card glass">
+        <h3>Top Professionals</h3>
+        <div class="stat-item">
+          <span class="stat-label">Available Talent</span>
+          <div class="progress-bar">
+            <div class="progress" style="width: 87%"></div>
+          </div>
+          <span class="stat-value">87%</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card filter-card glass">
+        <h3>Filter by</h3>
+        
+        <div class="filter-section">
+          <label>Search</label>
+          <mat-form-field appearance="outline" class="search-filter-field">
+            <mat-label>Search talent...</mat-label>
+            <input matInput 
+              placeholder="Name, skills..." 
+              [(ngModel)]="searchText" 
+              (keyup.enter)="search()">
+            <button mat-icon-button matSuffix (click)="search()">
+              <mat-icon>search</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-section">
+          <label>Category</label>
+          <div class="filter-buttons">
+            @for (category of categories; track category) {
+            <button 
+              mat-stroked-button
+              [class.active]="selectedCategory === category"
+              (click)="filterByCategory(category)"
+              class="category-btn">
+              {{category}}
+            </button>
+            }
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label>Hourly Rate Range (DT)</label>
+          <div class="budget-filter">
+            <mat-form-field appearance="outline" class="budget-field">
+              <mat-label>Min</mat-label>
+              <input matInput type="number" [(ngModel)]="minRate" (change)="applyFilters()">
+            </mat-form-field>
+            <span class="budget-separator">—</span>
+            <mat-form-field appearance="outline" class="budget-field">
+              <mat-label>Max</mat-label>
+              <input matInput type="number" [(ngModel)]="maxRate" (change)="applyFilters()">
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label>Sort by</label>
+          <mat-form-field appearance="outline" class="sort-field">
+            <mat-select [(ngModel)]="sortBy" (selectionChange)="applyFilters()">
+              <mat-option value="-rating">Highest Rating</mat-option>
+              <mat-option value="rating">Lowest Rating</mat-option>
+              <mat-option value="-rate">Highest Rate</mat-option>
+              <mat-option value="rate">Lowest Rate</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content: Talent Feed -->
+    <main class="feed-container">
+      <div class="feed-header">
+        <h2>Available Talents <span class="job-count" *ngIf="!isLoading">({{ filteredFreelancers.length }})</span></h2>
+        <div class="feed-tabs">
+          <span class="active-tab">All</span>
+          <span>Top Rated</span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading available talent...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredFreelancers.length === 0" class="empty-state">
+        <mat-icon>person_search</mat-icon>
+        <p>No talent found matching your criteria.</p>
+        <button mat-raised-button color="primary" (click)="clearFilters()">Clear Filters</button>
+      </div>
+
+      <!-- Talent Feed -->
+      <div class="feed-card glass" *ngIf="!isLoading && filteredFreelancers.length > 0">
+        @for (talent of filteredFreelancers; track talent.id; let last = $last) {
+        <div class="talent-entry-wrapper">
+          <article class="talent-entry">
+            <div class="entry-header">
+              <div class="talent-profile">
+                <div class="talent-avatar">{{talent.avatar}}</div>
+                <div class="talent-details">
+                  <h3 class="talent-name">{{talent.first_name}} {{talent.last_name}}</h3>
+                  <p class="talent-title">{{talent.title}}</p>
+                  <div class="talent-badges">
+                    <span class="badge" *ngIf="talent.profile_completed === 100">
+                      <mat-icon>verified</mat-icon> Verified
+                    </span>
+                    <span class="badge">
+                      <mat-icon>star</mat-icon> {{talent.rating}} rating
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="talent-actions">
+                <span class="hourly-rate"><strong>{{talent.hourly_rate}} DT</strong>/hr</span>
+                <button mat-icon-button class="save-icon" (click)="saveTalent(talent.id)">
+                  <mat-icon>favorite_border</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="entry-content">
+              <p class="description">{{talent.bio}}</p>
+              <div class="skills-list">
+                @for (skill of talent.skills; track skill) {
+                  <span class="skill-tag">{{skill}}</span>
+                }
+              </div>
+            </div>
+
+            <div class="entry-footer">
+              <div class="talent-completion">
+                <mat-icon>check_circle</mat-icon>
+                <span>Profile {{talent.profile_completed}}% Complete</span>
+              </div>
+              <button 
+                mat-raised-button 
+                color="primary" 
+                class="invite-btn"
+                (click)="inviteToJob(talent.id)">
+                Invite to Project
+              </button>
+            </div>
+          </article>
+          @if (!last) {
+          <mat-divider></mat-divider>
+          }
+        </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>

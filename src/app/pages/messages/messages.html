@@ -1,0 +1,142 @@
+<div class="messages-page">
+  <div class="messages-container glass">
+    <div class="messages-header">
+      <h2>Messages</h2>
+      <p class="subtitle">Direct messaging with clients and freelancers</p>
+    </div>
+
+    <div class="messages-content">
+      <!-- Conversations List (Left Sidebar) -->
+      <aside class="conversations-sidebar">
+        <div class="sidebar-header">
+          <h3>Conversations</h3>
+          <div class="sidebar-actions">
+            <span class="conversation-count" *ngIf="conversations.size > 0">
+              {{ conversations.size }}
+            </span>
+            <button mat-icon-button matTooltip="New conversation" (click)="toggleUserSearch()" class="new-chat-btn">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- User Search for new conversations -->
+        <div class="user-search" *ngIf="showUserSearch">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search users...</mat-label>
+            <input matInput [(ngModel)]="userSearchQuery" (keyup)="searchUsers()" placeholder="Type a name...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+          <div class="search-results" *ngIf="userSearchResults.length > 0">
+            @for (user of userSearchResults; track user.id) {
+              <div class="search-result-item" (click)="startConversation(user)">
+                <div class="result-avatar">{{ user.username[0] | uppercase }}</div>
+                <div class="result-info">
+                  <span class="result-name">{{ user.first_name || user.username }} {{ user.last_name }}</span>
+                  <span class="result-role">{{ user.role | titlecase }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="search-results" *ngIf="userSearchQuery.length >= 2 && userSearchResults.length === 0 && !isSearching">
+            <p class="no-results">No users found</p>
+          </div>
+        </div>
+
+        <div *ngIf="isLoading" class="loading-state">
+          <p>Loading conversations...</p>
+        </div>
+
+        <div *ngIf="!isLoading && conversations.size === 0 && !showUserSearch" class="empty-state">
+          <mat-icon>mail_outline</mat-icon>
+          <p>No conversations yet</p>
+          <button mat-stroked-button color="primary" (click)="toggleUserSearch()">Start a conversation</button>
+        </div>
+
+        <mat-list *ngIf="!isLoading && conversations.size > 0">
+          @for (userId of getConversationUserIds(); track userId) {
+          <ng-container *ngIf="getConversation(userId) as conv">
+          <mat-list-item
+            class="conversation-item"
+            [class.active]="selectedConversationId === userId"
+            (click)="selectConversation(userId)">
+            <div class="conversation-preview">
+              <div class="conversation-header">
+                <span class="user-name">{{ conv.user_name }}</span>
+                <span class="time">{{ formatTime(conv.last_message_time) }}</span>
+              </div>
+              <p class="last-message">{{ conv.last_message | slice:0:50 }}{{ conv.last_message.length > 50 ? '...' : '' }}</p>
+            </div>
+            <span class="unread-badge" *ngIf="conv.unread_count > 0">
+              {{ conv.unread_count }}
+            </span>
+          </mat-list-item>
+          <mat-divider></mat-divider>
+          </ng-container>
+          }
+        </mat-list>
+      </aside>
+
+      <!-- Chat Area (Main Content) -->
+      <main class="chat-area" *ngIf="selectedConversationId; else noConversationSelected">
+        <div class="chat-header">
+          <div class="chat-user-info">
+            <div class="chat-avatar">{{ getConversationName(selectedConversationId)[0] | uppercase }}</div>
+            <h3>{{ getConversationName(selectedConversationId) }}</h3>
+          </div>
+        </div>
+
+        <div class="messages-list" #messagesList>
+          @for (msg of getConversationMessages(selectedConversationId); track msg.id) {
+          <div class="message-group" [class.sent]="msg.sender_id === currentUserId">
+            <div class="message-item">
+              <div class="message-content">
+                {{ msg.content }}
+              </div>
+              <span class="message-time">{{ formatTime(msg.created_at) }}</span>
+            </div>
+          </div>
+          }
+
+          <div *ngIf="getConversationMessages(selectedConversationId).length === 0" class="no-messages">
+            <mat-icon>chat</mat-icon>
+            <p>Start the conversation! Send a message below.</p>
+          </div>
+        </div>
+
+        <div class="message-input-area">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Type a message...</mat-label>
+            <textarea
+              matInput
+              [(ngModel)]="currentMessage"
+              (keyup.enter)="sendMessage()"
+              rows="2"
+              placeholder="Type your message and press Enter to send...">
+            </textarea>
+          </mat-form-field>
+          <button
+            mat-raised-button
+            color="primary"
+            (click)="sendMessage()"
+            [disabled]="!currentMessage.trim()">
+            <mat-icon>send</mat-icon>
+            Send
+          </button>
+        </div>
+      </main>
+
+      <!-- Placeholder when no conversation is selected -->
+      <ng-template #noConversationSelected>
+        <div class="chat-area-placeholder">
+          <mat-icon>mail_outline</mat-icon>
+          <h3>Open a conversation</h3>
+          <p>Select a conversation from the left to start messaging</p>
+          <button mat-stroked-button color="primary" (click)="toggleUserSearch()" style="margin-top: 16px;">
+            <mat-icon>add</mat-icon> New Conversation
+          </button>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

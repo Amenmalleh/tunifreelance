@@ -1,0 +1,49 @@
+<div class="proposal-page">
+  <div class="container">
+    <mat-card class="proposal-card glass">
+      <div class="proposal-header">
+        <button mat-icon-button (click)="router.navigate(['/jobs'])">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <h2>Submit Proposal</h2>
+      </div>
+
+      <ng-container *ngIf="job; else noJob">
+        <div class="job-summary">
+          <h3>{{ job.title }}</h3>
+          <p class="job-meta">Budget: {{ job.budget }} DT • Deadline: {{ job.deadline }} • Client: {{ job.client }}</p>
+          <p>{{ job.description }}</p>
+        </div>
+
+        <form [formGroup]="proposalForm" (ngSubmit)="submitProposal()" class="proposal-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Proposal Message</mat-label>
+            <textarea matInput formControlName="message" rows="6" placeholder="Explain how you will complete this job. Minimum 20 characters."></textarea>
+            <mat-icon matSuffix>message</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Proposed Price (DT)</mat-label>
+            <input matInput type="number" formControlName="proposedPrice" placeholder="e.g. 2500">
+            <mat-icon matSuffix>paid</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Proposed Deadline</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="proposedDeadline">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <button mat-raised-button color="primary" type="submit" [disabled]="proposalForm.invalid || isLoading">
+            {{ isLoading ? 'Submitting…' : 'Submit Proposal' }}
+          </button>
+        </form>
+      </ng-container>
+
+      <ng-template #noJob>
+        <p>Job details are unavailable. Please return to the jobs list.</p>
+      </ng-template>
+    </mat-card>
+  </div>
+</div>

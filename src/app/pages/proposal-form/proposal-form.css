@@ -1,0 +1,5 @@
+.proposal-page { padding: 24px; }
+.proposal-card { max-width: 900px; margin: 0 auto; padding: 24px; }
+.proposal-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.job-summary { margin-bottom: 24px; }
+.full-width { width: 100%; }

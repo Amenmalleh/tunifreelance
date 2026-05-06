@@ -1,0 +1,131 @@
+<div class="auth-wrapper">
+  <div class="auth-container" [class.show-form]="!isSelectionStep">
+    <!-- Step 1: Role Selection -->
+    <div *ngIf="isSelectionStep" class="selection-step animate-fade-in">
+      <h1 class="auth-title">Join FreelanceHub</h1>
+      <p class="auth-subtitle">Select how you want to use the platform</p>
+
+      <div class="role-cards">
+        <mat-card class="role-card client" (click)="selectRole('client')">
+          <div class="role-icon-wrapper">
+            <mat-icon>business_center</mat-icon>
+          </div>
+          <mat-card-header>
+            <mat-card-title>I'm a Client</mat-card-title>
+            <mat-card-subtitle>Hiring for a project</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Find the best talent for your next big idea.</p>
+          </mat-card-content>
+          <div class="role-action">
+            <span>Hire Talent</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+
+        <mat-card class="role-card freelancer" (click)="selectRole('freelancer')">
+          <div class="role-icon-wrapper">
+            <mat-icon>person_search</mat-icon>
+          </div>
+          <mat-card-header>
+            <mat-card-title>I'm a Freelancer</mat-card-title>
+            <mat-card-subtitle>Looking for work</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>Apply to top projects and earn from your skills.</p>
+          </mat-card-content>
+          <div class="role-action">
+            <span>Find Work</span>
+            <mat-icon>arrow_forward</mat-icon>
+          </div>
+        </mat-card>
+      </div>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a (click)="isSelectionStep = false; selectedRole = 'freelancer'; isLogin = true">Sign In</a></p>
+      </div>
+    </div>
+
+    <!-- Step 2: Auth Form (Login/Register) -->
+    <div *ngIf="!isSelectionStep" class="form-step animate-slide-up">
+      <button mat-icon-button class="back-btn" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <h2 class="form-title">{{ isLogin ? 'Welcome Back' : 'Create Account' }}</h2>
+      <p class="form-subtitle">
+        {{ isLogin ? 'Access your account as a ' : 'Join us as a ' }}
+        <span class="role-badge" [class.freelancer]="selectedRole === 'freelancer'">
+          {{ selectedRole }}
+        </span>
+      </p>
+
+      <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
+        <!-- Username Field (for both login and signup) -->
+        <mat-form-field appearance="outline">
+          <mat-label>Username</mat-label>
+          <input matInput formControlName="username" placeholder="e.g. johndoe" required>
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
+        <!-- Signup Fields -->
+        <ng-container *ngIf="!isLogin">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>First name</mat-label>
+              <input matInput formControlName="firstName" placeholder="e.g. John" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Last name</mat-label>
+              <input matInput formControlName="lastName" placeholder="e.g. Doe" required>
+            </mat-form-field>
+          </div>
+        </ng-container>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="example@email.com" required>
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input matInput formControlName="password" type="password" placeholder="Password" required>
+          <mat-icon matSuffix>lock</mat-icon>
+          <mat-hint *ngIf="!isLogin">Password (8 or more characters)</mat-hint>
+        </mat-form-field>
+
+        <!-- Confirm Password for Signup -->
+        <ng-container *ngIf="!isLogin">
+          <mat-form-field appearance="outline">
+            <mat-label>Confirm Password</mat-label>
+            <input matInput formControlName="password2" type="password" placeholder="Confirm Password" required>
+            <mat-icon matSuffix>lock</mat-icon>
+          </mat-form-field>
+        </ng-container>
+
+        <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="authForm.invalid || isLoading">
+          <span *ngIf="!isLoading">{{ isLogin ? 'Sign In' : 'Create Account' }}</span>
+          <span *ngIf="isLoading">Loading...</span>
+        </button>
+
+        <div class="divider">
+          <span>OR</span>
+        </div>
+
+        <div class="social-auth">
+          <button mat-stroked-button type="button" class="google-btn">
+            <img src="https://lh3.googleusercontent.com/COxitqSg0XyMUC9P7rR8zXZMaG0C1W0l5h8xU0S0H7q6O1e7o7O_L1A9Z1k=s48" alt="Google">
+            Continue with Google
+          </button>
+        </div>
+
+        <p class="toggle-auth">
+          {{ isLogin ? "Don't have an account?" : "Already have an account?" }}
+          <a (click)="toggleAuthMode()">{{ isLogin ? 'Sign Up' : 'Sign In' }}</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

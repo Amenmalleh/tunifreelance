@@ -1,0 +1,184 @@
+<div class="jobs-dashboard">
+  <header class="dashboard-header">
+    <div class="container header-content">
+      <div class="welcome-section">
+        <h1 class="greeting">Find the best jobs for you</h1>
+        <p class="subtitle" style="margin-top: 15px;">Personalized opportunities based on your skills</p>
+      </div>
+      <div class="main-search-container">
+        <div class="premium-search-box">
+          <mat-icon>search</mat-icon>
+          <input type="text" placeholder="Search for jobs (Angular, UX design, Mobile...)"
+                 [(ngModel)]="headerSearchText" (keyup.enter)="headerSearch()">
+          <button mat-raised-button color="primary" (click)="headerSearch()">Search</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container dashboard-grid">
+    <!-- Sidebar: Filters & Stats -->
+    <aside class="sidebar">
+      <div class="sidebar-card glass">
+        <h3>My Profile Stats</h3>
+        <div class="stat-item">
+          <span class="stat-label">Profile Completed</span>
+          <div class="progress-bar">
+            <div class="progress" style="width: 85%"></div>
+          </div>
+          <span class="stat-value">85%</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card filter-card glass">
+        <h3>Filter by</h3>
+
+        <div class="filter-section">
+          <label>Search</label>
+          <mat-form-field appearance="outline" class="search-filter-field">
+            <mat-label>Search jobs...</mat-label>
+            <input matInput
+              placeholder="Keywords, skills..."
+              [(ngModel)]="searchText"
+              (keyup.enter)="search()">
+            <button mat-icon-button matSuffix (click)="search()">
+              <mat-icon>search</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-section">
+          <label>Category</label>
+          <div class="filter-buttons">
+            @for (category of categories; track category) {
+            <button
+              mat-stroked-button
+              [class.active]="selectedCategory === category"
+              (click)="filterByCategory(category)"
+              class="category-btn">
+              {{category}}
+            </button>
+            }
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label>Budget Range (DT)</label>
+          <div class="budget-filter">
+            <mat-form-field appearance="outline" class="budget-field">
+              <mat-label>Min</mat-label>
+              <input matInput type="number" [(ngModel)]="minBudget" (change)="loadJobs()">
+            </mat-form-field>
+            <span class="budget-separator">—</span>
+            <mat-form-field appearance="outline" class="budget-field">
+              <mat-label>Max</mat-label>
+              <input matInput type="number" [(ngModel)]="maxBudget" (change)="loadJobs()">
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label>Sort by</label>
+          <mat-form-field appearance="outline" class="sort-field">
+            <mat-select [(ngModel)]="sortBy" (selectionChange)="loadJobs()">
+              <mat-option value="-created_at">Most Recent</mat-option>
+              <mat-option value="created_at">Oldest First</mat-option>
+              <mat-option value="-budget">Highest Budget</mat-option>
+              <mat-option value="budget">Lowest Budget</mat-option>
+              <mat-option value="deadline">Nearest Deadline</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content: Job Feed -->
+    <main class="feed-container">
+      <div class="feed-header">
+        <h2>Available Jobs <span class="job-count" *ngIf="!isLoading">({{ filteredJobs.length }})</span></h2>
+        <div class="feed-tabs">
+          <span class="active-tab">Best Matches</span>
+          <span>Most Recent</span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-section">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Search jobs</mat-label>
+          <input matInput placeholder="Search by title or keyword..." [(ngModel)]="searchText" (keyup.enter)="search()">
+          <button mat-icon-button matSuffix (click)="search()">
+            <mat-icon>search</mat-icon>
+          </button>
+        </mat-form-field>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Loading available jobs...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!isLoading && filteredJobs.length === 0" class="empty-state">
+        <mat-icon>search</mat-icon>
+        <p>No jobs found matching your criteria.</p>
+        <button mat-raised-button color="primary" (click)="clearFilters()">Clear Filters</button>
+      </div>
+
+      <!-- Jobs Feed -->
+      <div class="feed-card glass" *ngIf="!isLoading && filteredJobs.length > 0">
+        @for (job of filteredJobs; track job.id; let last = $last) {
+        <div class="job-entry-wrapper">
+          <article class="job-entry">
+            <div class="entry-header">
+              <div class="title-section">
+                <h3 class="job-title">{{job.title}}</h3>
+                <div class="entry-meta">
+                  <span class="time-posted">Posted <strong>{{job.created_at | date:'short'}}</strong></span>
+                  <span class="separator">•</span>
+                  <span class="category-badge">{{job.category}}</span>
+                </div>
+              </div>
+              <button mat-icon-button class="save-icon" (click)="saveJob(job.id)">
+                <mat-icon>favorite_border</mat-icon>
+              </button>
+            </div>
+
+            <div class="entry-content">
+              <div class="payment-info">
+                <span class="budget">{{job.budget}} DT</span>
+                <span class="status" [class.open]="job.status === 'open'">{{job.status | titlecase}}</span>
+              </div>
+              <p class="description">{{job.description | slice:0:200}}...</p>
+              <div class="job-meta-info">
+                <span class="deadline">
+                  <mat-icon>calendar_today</mat-icon>
+                  Deadline: {{job.deadline}}
+                </span>
+              </div>
+            </div>
+
+            <div class="entry-footer">
+              <div class="client-info">
+                <mat-icon>verified</mat-icon>
+                <span>Client: {{job.client}}</span>
+              </div>
+              <button
+                mat-raised-button
+                color="primary"
+                class="apply-btn"
+                (click)="applyForJob(job.id)">
+                Apply Now
+              </button>
+            </div>
+          </article>
+          @if (!last) {
+          <mat-divider></mat-divider>
+          }
+        </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>

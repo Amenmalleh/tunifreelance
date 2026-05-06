@@ -1,0 +1,137 @@
+<div class="dashboard-page">
+  <div class="container welcome-header">
+    <div class="user-greeting">
+      <h1>Bienvenue, {{ auth.getFullName() }} !</h1>
+      <p>Votre tableau de bord {{ auth.currentRole() === 'freelancer' ? 'Freelance' : 'Client' }} est a jour.</p>
+    </div>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" [routerLink]="auth.currentRole() === 'freelancer' ? '/jobs' : '/post-job'">
+        <mat-icon>{{ auth.currentRole() === 'freelancer' ? 'search' : 'add' }}</mat-icon>
+        {{ auth.currentRole() === 'freelancer' ? 'Trouver du travail' : 'Poster un job' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="container dashboard-grid">
+    <div class="stats-row">
+      <!-- Freelancer: Earnings -->
+      <mat-card class="stat-card glass" *ngIf="auth.currentRole() === 'freelancer'">
+        <mat-icon class="stat-icon earnings">payments</mat-icon>
+        <div class="stat-content">
+          <span class="stat-label">Revenus Totaux</span>
+          <h2 class="stat-value">{{ freelancerStats.earnings }}</h2>
+        </div>
+      </mat-card>
+
+      <!-- Client: Spendings -->
+      <mat-card class="stat-card glass" *ngIf="auth.currentRole() === 'client'">
+        <mat-icon class="stat-icon spendings">shopping_cart</mat-icon>
+        <div class="stat-content">
+          <span class="stat-label">Total Depenses</span>
+          <h2 class="stat-value">{{ clientStats.spendings }}</h2>
+        </div>
+      </mat-card>
+
+      <!-- Active proposals / jobs -->
+      <mat-card class="stat-card glass">
+        <mat-icon class="stat-icon active">{{ auth.currentRole() === 'freelancer' ? 'description' : 'work_outline' }}</mat-icon>
+        <div class="stat-content">
+          <span class="stat-label">{{ auth.currentRole() === 'freelancer' ? 'Propositions Actives' : 'Jobs En Ligne' }}</span>
+          <h2 class="stat-value">{{ auth.currentRole() === 'freelancer' ? freelancerStats.activeProposals : clientStats.activeJobs }}</h2>
+        </div>
+      </mat-card>
+
+      <!-- Contracts / Applicants -->
+      <mat-card class="stat-card glass">
+        <mat-icon class="stat-icon score">{{ auth.currentRole() === 'freelancer' ? 'handshake' : 'group' }}</mat-icon>
+        <div class="stat-content">
+          <span class="stat-label">{{ auth.currentRole() === 'freelancer' ? 'Contrats Actifs' : 'Total Candidats' }}</span>
+          <h2 class="stat-value">{{ auth.currentRole() === 'freelancer' ? freelancerStats.activeContracts : clientStats.totalApplicants }}</h2>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="dashboard-content-layout">
+      <!-- Recent Notifications -->
+      <mat-card class="activity-feed glass">
+        <mat-card-header>
+          <mat-card-title>Activite Recente</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="activity-list" *ngIf="recentNotifications.length > 0">
+            @for (notif of recentNotifications; track notif.id) {
+              <div class="activity-item">
+                <div class="activity-icon-wrapper">
+                  <mat-icon>{{ getNotifIcon(notif.notification_type) }}</mat-icon>
+                </div>
+                <div class="activity-text">
+                  <p class="activity-label">{{ notif.title }}</p>
+                  <span class="activity-time">{{ formatTimeAgo(notif.created_at) }}</span>
+                </div>
+              </div>
+              <mat-divider *ngIf="!$last"></mat-divider>
+            }
+          </div>
+          <div class="empty-activity" *ngIf="recentNotifications.length === 0">
+            <mat-icon>inbox</mat-icon>
+            <p>Aucune activite recente pour le moment.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="role-card glass">
+        <mat-card-header>
+          <mat-card-title>{{ auth.currentRole() === 'freelancer' ? 'Actions rapides' : 'Favoris' }}</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="profile-completion" *ngIf="auth.currentRole() === 'freelancer'">
+            <p>Explorez les offres d'emploi et soumettez des propositions pour commencer.</p>
+            <button mat-raised-button color="primary" routerLink="/jobs">Trouver du travail</button>
+            <button mat-stroked-button color="primary" routerLink="/messages" style="margin-top: 10px;">Mes Messages</button>
+          </div>
+          <div class="client-tips" *ngIf="auth.currentRole() === 'client'">
+            <p>Consultez vos freelances favoris pour vos futurs projets.</p>
+            <button mat-raised-button color="accent" routerLink="/talent">Voir Talents</button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Client: Received Proposals -->
+      <mat-card class="role-card glass" *ngIf="auth.currentRole() === 'client'">
+        <mat-card-header>
+          <mat-card-title>Propositions Recues</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p *ngIf="isClientProposalLoading">Chargement des propositions...</p>
+
+          <div *ngIf="!isClientProposalLoading && clientProposals.length === 0">
+            <p>Aucune proposition recue pour le moment.</p>
+            <button mat-stroked-button color="primary" routerLink="/post-job">Publier un job</button>
+          </div>
+
+          <div *ngIf="!isClientProposalLoading && clientProposals.length > 0">
+            <p>{{ getClientPendingProposalsCount() }} en attente de decision.</p>
+            <div class="activity-list">
+              @for (proposal of clientProposals; track proposal.id) {
+                <div class="activity-item">
+                  <div class="activity-icon-wrapper">
+                    <mat-icon>{{ proposal.status === 'accepted' ? 'task_alt' : proposal.status === 'rejected' ? 'block' : 'mail' }}</mat-icon>
+                  </div>
+                  <div class="activity-text">
+                    <p class="activity-label">{{ proposal.freelance }} - {{ proposal.job_offer_title }}</p>
+                    <span class="activity-time">{{ formatPrice(proposal.proposed_price) }}</span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!$last"></mat-divider>
+              }
+            </div>
+
+            <div class="header-actions">
+              <button mat-raised-button color="primary" routerLink="/proposals">Gerer les propositions</button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
