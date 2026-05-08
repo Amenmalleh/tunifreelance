@@ -154,6 +154,26 @@ mat-progress-bar {
   border-radius: 20px;
 }
 
+.stars-inline {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.stat-sub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.no-rating {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
+  color: var(--text-muted) !important;
+}
+
 @media (max-width: 1000px) {
   .dashboard-content-layout {
     grid-template-columns: 1fr;

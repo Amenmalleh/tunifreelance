@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
-from .models import Profile, JobOffer, Proposal, Message, Contract
+from .models import Profile, JobOffer, Proposal, Message, Contract, Rating
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -35,8 +35,11 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
     def to_representation(self, instance):
-        profile, _ = Profile.objects.get_or_create(user=instance)
         representation = super().to_representation(instance)
+        # Use cached profile if already fetched via select_related, else fallback
+        profile = getattr(instance, 'profile', None)
+        if profile is None:
+            profile, _ = Profile.objects.get_or_create(user=instance)
         representation['role'] = profile.role
         return representation
 
@@ -89,3 +92,13 @@ class ContractSerializer(serializers.ModelSerializer):
         model = Contract
         fields = ('id', 'proposal', 'job_offer', 'freelancer', 'client', 'job_title', 'contract_price', 'contract_deadline', 'status', 'amount_locked', 'is_completed', 'proposal_details', 'created_at', 'completed_at')
         read_only_fields = ('id', 'freelancer', 'client', 'job_title', 'created_at', 'completed_at', 'proposal_details')
+
+
+class RatingSerializer(serializers.ModelSerializer):
+    client = serializers.ReadOnlyField(source='client.username')
+    freelancer = serializers.ReadOnlyField(source='freelancer.username')
+
+    class Meta:
+        model = Rating
+        fields = ('id', 'contract', 'client', 'freelancer', 'score', 'comment', 'created_at')
+        read_only_fields = ('id', 'client', 'freelancer', 'created_at')

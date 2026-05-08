@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -39,6 +40,10 @@ class JobOffer(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status']),
+            models.Index(fields=['client', 'status']),
+        ]
 
     def __str__(self):
         return f'{self.title} ({self.client.username})'
@@ -117,8 +122,23 @@ class Contract(models.Model):
         return f'Contract: {self.job_offer.title} - {self.freelancer.username}'
 
 
+class Rating(models.Model):
+    contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='rating')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings_given')
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ratings_received')
+    score = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'Rating {self.score}/5 by {self.client.username} for {self.freelancer.username}'
+
+
 @receiver(post_save, sender=User)
-def create_profile_for_new_user(sender, instance, created, **kwargs):
+def create_profile_for_new_user(_sender, instance, created, **_kwargs):
     if created:
         Profile.objects.create(user=instance)
     else:

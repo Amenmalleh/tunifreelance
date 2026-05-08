@@ -14,5 +14,7 @@ urlpatterns = [
     path('signup/', views.SignupView.as_view(), name='signup'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('dashboard/client/stats/', views.ClientDashboardStatsView.as_view(), name='client-dashboard-stats'),
+    path('dashboard/freelancer/stats/', views.FreelancerDashboardStatsView.as_view(), name='freelancer-dashboard-stats'),
     path('', include(router.urls)),
 ]

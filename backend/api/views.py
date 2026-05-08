@@ -1,15 +1,22 @@
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Avg, Q, Sum
 from django.contrib.auth import authenticate
 from django.utils import timezone
 from rest_framework import status, permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Profile, JobOffer, Proposal, Message, Contract
-from .serializers import UserSerializer, LoginSerializer, JobOfferSerializer, ProposalSerializer, MessageSerializer, ContractSerializer
+
+class JobOfferPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 50
+
+from .models import Profile, JobOffer, Proposal, Message, Contract, Rating
+from .serializers import UserSerializer, LoginSerializer, JobOfferSerializer, ProposalSerializer, MessageSerializer, ContractSerializer, RatingSerializer
 
 
 class SignupView(APIView):
@@ -87,6 +94,7 @@ class JobOfferViewSet(viewsets.ModelViewSet):
     queryset = JobOffer.objects.all()
     serializer_class = JobOfferSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = JobOfferPagination
 
     def get_permissions(self):
         if self.action == 'create':
@@ -98,7 +106,7 @@ class JobOfferViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        queryset = JobOffer.objects.all()
+        queryset = JobOffer.objects.select_related('client', 'client__profile')
         user = self.request.user
         if not user.is_authenticated:
             return queryset.filter(status=JobOffer.STATUS_OPEN)
@@ -132,9 +140,10 @@ class ProposalViewSet(viewsets.ModelViewSet):
         profile = getattr(user, 'profile', None)
         if profile is None:
             profile, _ = Profile.objects.get_or_create(user=user)
+        base = Proposal.objects.select_related('job_offer', 'freelance', 'freelance__profile')
         if profile.role == Profile.ROLE_FREELANCER:
-            return Proposal.objects.filter(freelance=user).select_related('job_offer', 'freelance')
-        return Proposal.objects.filter(job_offer__client=user).select_related('job_offer', 'freelance')
+            return base.filter(freelance=user)
+        return base.filter(job_offer__client=user)
 
     def perform_create(self, serializer):
         serializer.save(freelance=self.request.user)
@@ -248,8 +257,10 @@ class ContractViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        # Users can see contracts where they are freelancer or client
-        return Contract.objects.filter(Q(freelancer=user) | Q(client=user))
+        return Contract.objects.select_related(
+            'proposal', 'proposal__freelance', 'proposal__job_offer',
+            'job_offer', 'freelancer', 'client'
+        ).filter(Q(freelancer=user) | Q(client=user))
 
     @action(detail=True, methods=['post'], url_path='complete')
     def complete(self, request, pk=None):
@@ -302,3 +313,73 @@ class ContractViewSet(viewsets.ModelViewSet):
             'message': 'Contract cancelled successfully',
             'contract': ContractSerializer(contract).data
         }, status=status.HTTP_200_OK)
+
+
+class ClientDashboardStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        total_expenses = Contract.objects.filter(
+            client=user,
+            status=Contract.STATUS_COMPLETED
+        ).aggregate(total=Sum('contract_price'))['total'] or 0
+
+        active_jobs = JobOffer.objects.filter(
+            client=user,
+            status=JobOffer.STATUS_OPEN
+        ).count()
+
+        total_jobs = JobOffer.objects.filter(client=user).count()
+        jobs_with_proposals = JobOffer.objects.filter(
+            client=user,
+            proposals__isnull=False
+        ).distinct().count()
+        hire_rate = round(jobs_with_proposals / total_jobs * 100, 1) if total_jobs > 0 else 0.0
+
+        return Response({
+            'total_expenses': float(total_expenses),
+            'active_jobs': active_jobs,
+            'hire_rate': hire_rate,
+        })
+
+
+class FreelancerDashboardStatsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        total_revenue = Contract.objects.filter(
+            freelancer=user,
+            status=Contract.STATUS_COMPLETED
+        ).aggregate(total=Sum('contract_price'))['total'] or 0
+
+        active_proposals_qs = Proposal.objects.filter(
+            freelance=user,
+            status=Proposal.STATUS_PENDING
+        ).select_related('job_offer')
+
+        active_proposals_list = [
+            {
+                'id': p.id,
+                'job_title': p.job_offer.title,
+                'proposed_price': float(p.proposed_price),
+                'created_at': p.created_at.isoformat(),
+            }
+            for p in active_proposals_qs
+        ]
+
+        ratings_qs = Rating.objects.filter(freelancer=user)
+        ratings_count = ratings_qs.count()
+        avg = ratings_qs.aggregate(avg=Avg('score'))['avg']
+        profile_score = round(avg, 1) if avg is not None else None
+
+        return Response({
+            'total_revenue': float(total_revenue),
+            'active_proposals': len(active_proposals_list),
+            'active_proposals_list': active_proposals_list,
+            'profile_score': profile_score,
+            'ratings_count': ratings_count,
+        })

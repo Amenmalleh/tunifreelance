@@ -7,9 +7,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../services/auth.service';
 import { RouterLink } from '@angular/router';
 import { ProposalService, Proposal } from '../../services/proposal.service';
+import { DashboardService, ClientStats, FreelancerStats } from '../../services/dashboard.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,45 +25,74 @@ import { ProposalService, Proposal } from '../../services/proposal.service';
     MatDividerModule,
     MatTableModule,
     MatSnackBarModule,
-    RouterLink
+    MatProgressSpinnerModule,
+    RouterLink,
   ],
   templateUrl: './dashboard.html',
-  styleUrl: './dashboard.css'
+  styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit {
   public auth = inject(AuthService);
   private proposalService = inject(ProposalService);
+  private dashboardService = inject(DashboardService);
   private snackBar = inject(MatSnackBar);
-  
-  // Mock data for Freelancer
-  freelancerStats = {
-    earnings: '8,450 DT',
-    activeProposals: 12,
-    completedJobs: 24,
-    profileScore: 92
-  };
 
-  // Mock data for Client
-  clientStats = {
-    spendings: '15,200 DT',
-    activeJobs: 3,
-    totalApplicants: 45,
-    hireRate: 78
+  isLoadingStats = false;
+
+  clientStats: ClientStats = { total_expenses: 0, active_jobs: 0, hire_rate: 0 };
+  freelancerStats: FreelancerStats = {
+    total_revenue: 0,
+    active_proposals: 0,
+    active_proposals_list: [],
+    profile_score: null,
+    ratings_count: 0,
   };
 
   recentActivity = [
-    { label: 'New application received', time: 'il y a 2h', icon: 'person_add' },
-    { label: 'Payment of 450 DT cleared', time: 'il y a 5h', icon: 'payments' },
-    { label: 'Project "Banking App" completed', time: 'il y a 1j', icon: 'check_circle' }
+    { label: 'Nouvelle candidature reçue', time: 'il y a 2h', icon: 'person_add' },
+    { label: 'Paiement de 450 DT validé', time: 'il y a 5h', icon: 'payments' },
+    { label: 'Projet "Banking App" terminé', time: 'il y a 1j', icon: 'check_circle' },
   ];
 
   clientProposals: Proposal[] = [];
   isClientProposalLoading = false;
 
   ngOnInit() {
-    if (this.auth.currentRole() === 'client') {
+    const role = this.auth.currentRole();
+    if (role === 'client') {
+      this.loadClientStats();
       this.loadClientProposals();
+    } else {
+      this.loadFreelancerStats();
     }
+  }
+
+  loadClientStats() {
+    this.isLoadingStats = true;
+    this.dashboardService.getClientStats().subscribe({
+      next: (stats) => {
+        this.clientStats = stats;
+        this.isLoadingStats = false;
+      },
+      error: () => {
+        this.isLoadingStats = false;
+        this.snackBar.open('Impossible de charger les statistiques.', 'Fermer', { duration: 4000 });
+      },
+    });
+  }
+
+  loadFreelancerStats() {
+    this.isLoadingStats = true;
+    this.dashboardService.getFreelancerStats().subscribe({
+      next: (stats) => {
+        this.freelancerStats = stats;
+        this.isLoadingStats = false;
+      },
+      error: () => {
+        this.isLoadingStats = false;
+        this.snackBar.open('Impossible de charger les statistiques.', 'Fermer', { duration: 4000 });
+      },
+    });
   }
 
   loadClientProposals() {
@@ -69,24 +100,37 @@ export class Dashboard implements OnInit {
     this.proposalService.getProposals().subscribe({
       next: (proposals) => {
         this.clientProposals = proposals.slice(0, 3);
-        this.clientStats.totalApplicants = proposals.length;
         this.isClientProposalLoading = false;
       },
       error: () => {
         this.isClientProposalLoading = false;
-        this.snackBar.open('Unable to load received proposals.', 'Close', { duration: 4000 });
-      }
+        this.snackBar.open('Impossible de charger les propositions.', 'Fermer', { duration: 4000 });
+      },
     });
   }
 
   getClientPendingProposalsCount(): number {
-    return this.clientProposals.filter((proposal) => proposal.status === 'pending').length;
+    return this.clientProposals.filter((p) => p.status === 'pending').length;
+  }
+
+  getStarsArray(score: number | null): number[] {
+    if (!score) return [];
+    return Array.from({ length: Math.round(score) }, (_, i) => i);
+  }
+
+  formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-TN', {
+      style: 'currency',
+      currency: 'TND',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   }
 
   formatPrice(price: number): string {
     return new Intl.NumberFormat('fr-TN', {
       style: 'currency',
-      currency: 'TND'
+      currency: 'TND',
     }).format(price);
   }
 }
