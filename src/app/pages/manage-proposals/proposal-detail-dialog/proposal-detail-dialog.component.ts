@@ -15,21 +15,23 @@ import { Proposal } from '../../../services/proposal.service';
     <mat-dialog-content>
       <div class="detail-section">
         <label>Freelancer:</label>
-        <p>{{ data.freelance }}</p>
+        <p class="highlight">{{ data.freelance }}</p>
       </div>
 
       <mat-divider></mat-divider>
 
       <div class="detail-section">
         <label>Job Title:</label>
-        <p>{{ data.job_offer_title }}</p>
+        <p class="highlight">{{ data.job_offer_title }}</p>
       </div>
 
       <mat-divider></mat-divider>
 
-      <div class="detail-section">
+      <div class="detail-section message-section">
         <label>Proposal Message:</label>
-        <p class="full-message">{{ data.message }}</p>
+        <div class="message-box">
+          <p class="full-message">{{ data.message }}</p>
+        </div>
       </div>
 
       <mat-divider></mat-divider>
@@ -42,7 +44,7 @@ import { Proposal } from '../../../services/proposal.service';
 
         <div class="detail-item">
           <label>Proposed Deadline:</label>
-          <p>{{ formatDate(data.proposed_deadline) }}</p>
+          <p class="highlight">{{ formatDate(data.proposed_deadline) }}</p>
         </div>
       </div>
 
@@ -55,58 +57,84 @@ import { Proposal } from '../../../services/proposal.service';
 
       <div class="detail-section">
         <label>Submitted:</label>
-        <p>{{ formatDate(data.created_at) }}</p>
+        <p class="time-stamp">{{ formatDateTime(data.created_at) }}</p>
       </div>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button (click)="onClose()">Close</button>
+      <button mat-button color="primary" (click)="onClose()">Close</button>
     </mat-dialog-actions>
   `,
   styles: [`
     .detail-section {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
+      margin-top: 10px;
 
       label {
         font-weight: 600;
-        color: #666;
+        color: #555;
         display: block;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
       }
 
       p {
         margin: 0;
-        color: #333;
+        color: #222;
+        font-size: 1rem;
+      }
+      
+      .highlight {
+        font-weight: 500;
+        color: #1a237e;
+      }
+
+      .message-box {
+        background: #f8f9fa;
+        border-left: 4px solid #3f51b5;
+        padding: 15px;
+        border-radius: 4px 8px 8px 4px;
       }
 
       .full-message {
         white-space: pre-wrap;
-        line-height: 1.5;
+        line-height: 1.8;
+        color: #333;
+        font-size: 1.05rem;
       }
 
       .price {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         color: #4caf50;
-        font-weight: 600;
+        font-weight: 700;
+      }
+      
+      .time-stamp {
+        color: #666;
+        font-style: italic;
       }
 
       .status {
-        padding: 5px 10px;
-        border-radius: 4px;
+        padding: 6px 12px;
+        border-radius: 6px;
         display: inline-block;
+        font-weight: 600;
 
         &.pending {
           background: #fff3e0;
           color: #e65100;
+          border: 1px solid #ffe0b2;
         }
 
         &.accepted {
           background: #e8f5e9;
           color: #2e7d32;
+          border: 1px solid #c8e6c9;
         }
 
         &.rejected {
           background: #ffebee;
           color: #c62828;
+          border: 1px solid #ffcdd2;
         }
       }
     }
@@ -157,6 +185,16 @@ export class ProposalDetailDialogComponent {
 
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('fr-TN');
+  }
+
+  formatDateTime(date: string): string {
+    return new Date(date).toLocaleString('fr-TN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   onClose(): void {

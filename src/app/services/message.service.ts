@@ -37,7 +37,7 @@ export interface UserSearchResult {
 export class MessageService {
   private readonly API_URL = 'http://127.0.0.1:8001/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getMessages(): Observable<Message[]> {
     return this.http.get<Message[]>(`${this.API_URL}/messages/`);

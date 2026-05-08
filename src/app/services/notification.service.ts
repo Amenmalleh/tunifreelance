@@ -25,7 +25,7 @@ export class NotificationService {
   notifications = computed(() => this.notificationsSignal());
   unreadCount = computed(() => this.unreadCountSignal());
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   loadNotifications(): Observable<AppNotification[]> {
     return this.http.get<AppNotification[]>(`${this.API_URL}/notifications/`).pipe(

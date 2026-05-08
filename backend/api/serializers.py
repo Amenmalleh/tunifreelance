@@ -63,11 +63,15 @@ class ProposalSerializer(serializers.ModelSerializer):
     freelance = serializers.ReadOnlyField(source='freelance.username')
     freelance_role = serializers.CharField(source='freelance.profile.role', read_only=True)
     job_offer_title = serializers.CharField(source='job_offer.title', read_only=True)
+    has_contract = serializers.SerializerMethodField()
 
     class Meta:
         model = Proposal
-        fields = ('id', 'freelance', 'freelance_role', 'job_offer', 'job_offer_title', 'message', 'proposed_price', 'proposed_deadline', 'status', 'created_at')
-        read_only_fields = ('id', 'freelance', 'freelance_role', 'job_offer_title', 'status', 'created_at')
+        fields = ('id', 'freelance', 'freelance_role', 'job_offer', 'job_offer_title', 'message', 'proposed_price', 'proposed_deadline', 'status', 'created_at', 'has_contract')
+        read_only_fields = ('id', 'freelance', 'freelance_role', 'job_offer_title', 'status', 'created_at', 'has_contract')
+
+    def get_has_contract(self, obj):
+        return hasattr(obj, 'contract') and obj.contract is not None
 
 
 class MessageSerializer(serializers.ModelSerializer):

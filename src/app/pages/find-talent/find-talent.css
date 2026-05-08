@@ -244,7 +244,7 @@
   transition: all 0.2s ease;
 }
 
-.feed-tabs span.active-tab {
+.feed-tabs span.active {
   color: var(--primary-color);
   border-bottom: 2px solid var(--primary-color);
 }
@@ -358,6 +358,14 @@
 
 .save-icon:hover {
   color: var(--secondary-color);
+}
+
+.save-icon.saved {
+  color: #ff4081;
+}
+
+.save-icon.saved:hover {
+  color: #e91e63;
 }
 
 .entry-content {

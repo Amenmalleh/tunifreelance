@@ -58,6 +58,7 @@
           <ng-container *ngIf="getConversation(userId) as conv">
           <mat-list-item
             class="conversation-item"
+            style="margin-bottom: 20px;margin-top: 20px;"
             [class.active]="selectedConversationId === userId"
             (click)="selectConversation(userId)">
             <div class="conversation-preview">
@@ -71,7 +72,6 @@
               {{ conv.unread_count }}
             </span>
           </mat-list-item>
-          <mat-divider></mat-divider>
           </ng-container>
           }
         </mat-list>
@@ -132,8 +132,8 @@
           <mat-icon>mail_outline</mat-icon>
           <h3>Open a conversation</h3>
           <p>Select a conversation from the left to start messaging</p>
-          <button mat-stroked-button color="primary" (click)="toggleUserSearch()" style="margin-top: 16px;">
-            <mat-icon>add</mat-icon> New Conversation
+          <button mat-stroked-button color="primary" (click)="toggleUserSearch()" style="margin-top: 5px;">
+            <mat-icon style="margin-top: 5px;size: 5px;">add</mat-icon> New Conversation
           </button>
         </div>
       </ng-template>

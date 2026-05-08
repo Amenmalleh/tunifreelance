@@ -92,7 +92,9 @@ class DashboardStatsView(APIView):
             )['total'] or 0
 
             active_proposals = Proposal.objects.filter(
-                freelance=user, status=Proposal.STATUS_PENDING
+                freelance=user,
+                status=Proposal.STATUS_ACCEPTED,
+                contract__isnull=True
             ).count()
 
             completed_jobs = completed_contracts.count()
@@ -293,6 +295,8 @@ class ProposalViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated(), IsProposalOwnerOrClient()]
         if self.action in ['accept', 'reject']:
             return [permissions.IsAuthenticated(), IsClient()]
+        if self.action == 'approve':
+            return [permissions.IsAuthenticated(), IsFreelance()]
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
@@ -332,6 +336,40 @@ class ProposalViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            proposal.status = Proposal.STATUS_ACCEPTED
+            proposal.save(update_fields=['status'])
+
+            # Notify the freelancer
+            create_notification(
+                user=proposal.freelance,
+                notification_type='proposal_accepted',
+                title='Proposal accepted!',
+                message=f'Your proposal for "{proposal.job_offer.title}" has been accepted by the client. Please approve it to create a contract.',
+                link='/dashboard'
+            )
+
+        return Response({
+            'message': 'Proposal accepted successfully. Waiting for freelancer approval.',
+            'proposal': ProposalSerializer(proposal).data
+        }, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], url_path='approve')
+    def approve(self, request, pk=None):
+        with transaction.atomic():
+            proposal = Proposal.objects.select_for_update().select_related('job_offer', 'freelance').get(pk=pk)
+
+            if proposal.freelance != request.user:
+                return Response(
+                    {'error': 'Only the freelancer can approve accepted proposals'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            if proposal.status != Proposal.STATUS_ACCEPTED:
+                return Response(
+                    {'error': f'Can only approve accepted proposals. Current status: {proposal.status}'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
             if hasattr(proposal, 'contract'):
                 return Response(
                     {'error': 'A contract already exists for this proposal'},
@@ -342,15 +380,13 @@ class ProposalViewSet(viewsets.ModelViewSet):
                 proposal=proposal,
                 job_offer=proposal.job_offer,
                 freelancer=proposal.freelance,
-                client=request.user,
+                client=proposal.job_offer.client,
                 contract_price=proposal.proposed_price,
                 contract_deadline=proposal.proposed_deadline or proposal.job_offer.deadline,
                 amount_locked=proposal.proposed_price
             )
 
-            proposal.status = Proposal.STATUS_ACCEPTED
-            proposal.save(update_fields=['status'])
-
+            # Close other pending proposals for this job
             Proposal.objects.filter(
                 job_offer=proposal.job_offer,
                 status=Proposal.STATUS_PENDING
@@ -359,31 +395,31 @@ class ProposalViewSet(viewsets.ModelViewSet):
             proposal.job_offer.status = JobOffer.STATUS_CLOSED
             proposal.job_offer.save(update_fields=['status'])
 
-            # Notify the freelancer
+            # Notify the client
             create_notification(
-                user=proposal.freelance,
-                notification_type='proposal_accepted',
-                title='Proposal accepted!',
-                message=f'Your proposal for "{proposal.job_offer.title}" has been accepted.',
+                user=proposal.job_offer.client,
+                notification_type='contract_created',
+                title='Contract created',
+                message=f'{proposal.freelance.username} approved the proposal and the contract is now active.',
                 link='/dashboard'
             )
 
         return Response({
-            'message': 'Proposal accepted successfully',
+            'message': 'Proposal approved and contract created successfully',
             'contract': ContractSerializer(contract).data
         }, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['post'], url_path='reject')
     def reject(self, request, pk=None):
         proposal = self.get_object()
-        
+
         # Verify that the requester is the job client
         if proposal.job_offer.client != request.user:
             return Response(
                 {'error': 'Only the job client can reject proposals'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         if proposal.status != Proposal.STATUS_PENDING:
             return Response(
                 {'error': f'Can only reject pending proposals. Current status: {proposal.status}'},
@@ -486,14 +522,14 @@ class ContractViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='complete')
     def complete(self, request, pk=None):
         contract = self.get_object()
-        
+
         # Verify that the requester is the freelancer or client
         if contract.freelancer != request.user and contract.client != request.user:
             return Response(
                 {'error': 'Only contract participants can mark as complete'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         if contract.status != Contract.STATUS_ACTIVE:
             return Response(
                 {'error': f'Can only complete active contracts. Current status: {contract.status}'},
@@ -523,14 +559,14 @@ class ContractViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel(self, request, pk=None):
         contract = self.get_object()
-        
+
         # Only client can cancel
         if contract.client != request.user:
             return Response(
                 {'error': 'Only the client can cancel contracts'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
+
         if contract.status != Contract.STATUS_ACTIVE:
             return Response(
                 {'error': f'Can only cancel active contracts. Current status: {contract.status}'},

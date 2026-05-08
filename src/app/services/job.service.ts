@@ -41,7 +41,7 @@ export interface JobSearchFilters {
 export class JobService {
   private readonly API_URL = 'http://127.0.0.1:8001/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getJobOffers(filters?: JobSearchFilters): Observable<JobOffer[]> {
     let params = new HttpParams();

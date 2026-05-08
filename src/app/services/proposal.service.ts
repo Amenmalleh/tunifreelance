@@ -12,6 +12,7 @@ export interface Proposal {
   proposed_price: number;
   proposed_deadline: string;
   status: 'pending' | 'accepted' | 'rejected';
+  has_contract?: boolean;
   created_at: string;
 }
 
@@ -57,7 +58,7 @@ export interface DashboardStats {
 export class ProposalService {
   private readonly API_URL = 'http://127.0.0.1:8001/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   createProposal(payload: CreateProposalPayload): Observable<Proposal> {
     return this.http.post<Proposal>(`${this.API_URL}/proposals/`, payload);
@@ -71,9 +72,16 @@ export class ProposalService {
     return this.http.get<Proposal>(`${this.API_URL}/proposals/${id}/`);
   }
 
-  acceptProposal(id: number): Observable<{ message: string; contract: Contract }> {
-    return this.http.post<{ message: string; contract: Contract }>(
+  acceptProposal(id: number): Observable<{ message: string; proposal: Proposal }> {
+    return this.http.post<{ message: string; proposal: Proposal }>(
       `${this.API_URL}/proposals/${id}/accept/`,
+      {}
+    );
+  }
+
+  approveProposal(id: number): Observable<{ message: string; contract: Contract }> {
+    return this.http.post<{ message: string; contract: Contract }>(
+      `${this.API_URL}/proposals/${id}/approve/`,
       {}
     );
   }

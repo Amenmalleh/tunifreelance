@@ -41,12 +41,19 @@
         </div>
       </mat-card>
 
-      <!-- Contracts / Applicants -->
       <mat-card class="stat-card glass">
-        <mat-icon class="stat-icon score">{{ auth.currentRole() === 'freelancer' ? 'handshake' : 'group' }}</mat-icon>
+        <mat-icon class="stat-icon active">handshake</mat-icon>
         <div class="stat-content">
-          <span class="stat-label">{{ auth.currentRole() === 'freelancer' ? 'Active Contracts' : 'Total Applicants' }}</span>
-          <h2 class="stat-value">{{ auth.currentRole() === 'freelancer' ? freelancerStats.activeContracts : clientStats.totalApplicants }}</h2>
+          <span class="stat-label">Active Contracts</span>
+          <h2 class="stat-value">{{ auth.currentRole() === 'freelancer' ? freelancerStats.activeContracts : clientStats.activeContracts }}</h2>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card glass">
+        <mat-icon class="stat-icon score">{{ auth.currentRole() === 'freelancer' ? 'task_alt' : 'group' }}</mat-icon>
+        <div class="stat-content">
+          <span class="stat-label">{{ auth.currentRole() === 'freelancer' ? 'Completed Jobs' : 'Total Applicants' }}</span>
+          <h2 class="stat-value">{{ auth.currentRole() === 'freelancer' ? freelancerStats.completedJobs : clientStats.totalApplicants }}</h2>
         </div>
       </mat-card>
     </div>
@@ -75,6 +82,54 @@
           <div class="empty-activity" *ngIf="recentNotifications.length === 0">
             <mat-icon>inbox</mat-icon>
             <p>No recent activity at the moment.</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="favorites-card glass">
+        <mat-card-header>
+          <mat-card-title>Saved Favorites</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="favorite-section" *ngIf="auth.currentRole() === 'freelancer'">
+            <h3>Saved jobs</h3>
+            <div class="favorites-list" *ngIf="favoriteJobs.length > 0; else noSavedJobs">
+              @for (job of favoriteJobs; track job.id) {
+                <div class="favorite-item">
+                  <div>
+                    <p class="favorite-title">{{ job.title }}</p>
+                    <span class="favorite-meta">{{ job.category }} • {{ job.location }}</span>
+                  </div>
+                  <span class="favorite-value">{{ formatPrice(job.budget) }}</span>
+                </div>
+              }
+            </div>
+            <ng-template #noSavedJobs>
+              <p class="empty-favorites">No saved jobs yet. Use the heart icon on a job to save it.</p>
+            </ng-template>
+          </div>
+
+          <div class="favorite-section" *ngIf="auth.currentRole() === 'client'">
+            <h3>Saved talents</h3>
+            <div class="favorites-list" *ngIf="favoriteTalents.length > 0; else noSavedTalents">
+              @for (talent of favoriteTalents; track talent.id) {
+                <div class="favorite-item">
+                  <div>
+                    <p class="favorite-title">{{ talent.first_name }} {{ talent.last_name }}</p>
+                    <span class="favorite-meta">{{ talent.title }} • {{ talent.location }}</span>
+                  </div>
+                  <span class="favorite-value">{{ talent.rating }}★</span>
+                </div>
+              }
+            </div>
+            <ng-template #noSavedTalents>
+              <p class="empty-favorites">No saved talents yet. Use the heart icon on a freelancer card to save one.</p>
+            </ng-template>
+          </div>
+
+          <div class="favorite-actions">
+            <button mat-stroked-button color="primary" routerLink="/jobs">Browse Jobs</button>
+            <button mat-stroked-button color="accent" routerLink="/talent">Browse Talents</button>
           </div>
         </mat-card-content>
       </mat-card>
@@ -128,6 +183,54 @@
 
             <div class="header-actions">
               <button mat-raised-button color="primary" routerLink="/proposals">Manage proposals</button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Freelancer: Sent Proposals -->
+      <mat-card class="role-card glass" *ngIf="auth.currentRole() === 'freelancer'">
+        <mat-card-header>
+          <mat-card-title>Your Proposals</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p *ngIf="isFreelancerProposalLoading">Loading proposals...</p>
+
+          <div *ngIf="!isFreelancerProposalLoading && freelancerProposals.length === 0">
+            <p>No proposals sent yet.</p>
+            <button mat-stroked-button color="primary" routerLink="/jobs">Find Work</button>
+          </div>
+
+          <div *ngIf="!isFreelancerProposalLoading && freelancerProposals.length > 0">
+            <p *ngIf="getFreelancerAcceptedProposalsCount() > 0" class="accepted-text" style="color: #4caf50; font-weight: bold; margin-bottom: 10px;">
+              You have {{ getFreelancerAcceptedProposalsCount() }} proposal(s) accepted by client! Waiting for your approval.
+            </p>
+            <div class="activity-list">
+              @for (proposal of freelancerProposals.slice(0, 5); track proposal.id) {
+                <div class="activity-item" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                  <div style="display: flex; gap: 10px;">
+                    <div class="activity-icon-wrapper">
+                      <mat-icon>{{ proposal.status === 'accepted' ? 'task_alt' : proposal.status === 'rejected' ? 'block' : 'schedule' }}</mat-icon>
+                    </div>
+                    <div class="activity-text">
+                      <p class="activity-label">{{ proposal.job_offer_title }}</p>
+                      <span class="activity-time">{{ proposal.status | titlecase }} - {{ formatPrice(proposal.proposed_price) }}</span>
+                    </div>
+                  </div>
+                  <div class="proposal-action-row">
+                    <button *ngIf="proposal.status === 'accepted' && !proposal.has_contract" mat-raised-button color="accent" (click)="approveProposal(proposal)">
+                      Approve
+                    </button>
+                    <span *ngIf="proposal.status === 'accepted' && proposal.has_contract" class="approved-tag">
+                      Contract created
+                    </span>
+                  </div>
+                </div>
+                <mat-divider *ngIf="!$last"></mat-divider>
+              }
+            </div>
+            <div class="header-actions" style="margin-top: 15px;">
+              <button mat-stroked-button color="primary" routerLink="/proposals">Manage Proposals</button>
             </div>
           </div>
         </mat-card-content>

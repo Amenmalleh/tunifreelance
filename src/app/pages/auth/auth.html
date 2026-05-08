@@ -112,17 +112,6 @@
           <span *ngIf="isLoading">Loading...</span>
         </button>
 
-        <div class="divider">
-          <span>OR</span>
-        </div>
-
-        <div class="social-auth">
-          <button mat-stroked-button type="button" class="google-btn">
-            <img src="https://lh3.googleusercontent.com/COxitqSg0XyMUC9P7rR8zXZMaG0C1W0l5h8xU0S0H7q6O1e7o7O_L1A9Z1k=s48" alt="Google">
-            Continue with Google
-          </button>
-        </div>
-
         <p class="toggle-auth">
           {{ isLogin ? "Don't have an account?" : "Already have an account?" }}
           <a (click)="toggleAuthMode()">{{ isLogin ? 'Sign Up' : 'Sign In' }}</a>

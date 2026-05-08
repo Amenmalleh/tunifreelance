@@ -110,8 +110,8 @@
       <div class="feed-header">
         <h2>Available Talents <span class="job-count" *ngIf="!isLoading">({{ filteredFreelancers.length }})</span></h2>
         <div class="feed-tabs">
-          <span class="active-tab">All</span>
-          <span>Top Rated</span>
+          <span class="tab" [class.active]="!showTopRated" (click)="showTopRated = false; applyFilters()">All</span>
+          <span class="tab" [class.active]="showTopRated" (click)="showTopRated = true; applyFilters()">Top Rated</span>
         </div>
       </div>
 
@@ -155,8 +155,8 @@
               </div>
               <div class="talent-actions">
                 <span class="hourly-rate"><strong>{{talent.hourly_rate}} DT</strong>/hr</span>
-                <button mat-icon-button class="save-icon" (click)="saveTalent(talent.id)">
-                  <mat-icon>favorite_border</mat-icon>
+                <button mat-icon-button class="save-icon" [class.saved]="talent.saved" (click)="saveTalent(talent.id)">
+                  <mat-icon>{{ talent.saved ? 'favorite' : 'favorite_border' }}</mat-icon>
                 </button>
               </div>
             </div>

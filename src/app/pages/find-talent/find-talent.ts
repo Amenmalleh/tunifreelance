@@ -28,6 +28,7 @@ export interface Freelancer {
   hourly_rate?: number;
   bio?: string;
   profile_completed?: number;
+  saved?: boolean;
 }
 
 @Component({
@@ -67,8 +68,12 @@ export class FindTalent implements OnInit {
   sortBy = '-rating';
   minRate: number | null = null;
   maxRate: number | null = null;
+  showTopRated = false;
+  savedTalents: Set<number> = new Set();
+  savedTalentSummaries: Freelancer[] = [];
 
   ngOnInit() {
+    this.loadSavedTalents();
     this.loadTalent();
   }
 
@@ -90,7 +95,8 @@ export class FindTalent implements OnInit {
         rating: 4.9,
         hourly_rate: 65,
         bio: 'Experienced Angular developer with 5+ years in the ecosystem. Expert in building scalable and performant web applications.',
-        profile_completed: 95
+        profile_completed: 95,
+        saved: false
       },
       {
         id: 2,
@@ -105,7 +111,8 @@ export class FindTalent implements OnInit {
         rating: 5.0,
         hourly_rate: 50,
         bio: 'Creative and detail-oriented designer specialized in creating beautiful and functional user interfaces.',
-        profile_completed: 100
+        profile_completed: 100,
+        saved: false
       },
       {
         id: 3,
@@ -120,9 +127,14 @@ export class FindTalent implements OnInit {
         rating: 4.8,
         hourly_rate: 55,
         bio: 'Fullstack developer passionate about building end-to-end solutions with modern technologies.',
-        profile_completed: 90
+        profile_completed: 90,
+        saved: false
       }
     ];
+
+    this.freelancers.forEach((freelancer) => {
+      freelancer.saved = this.savedTalents.has(freelancer.id);
+    });
 
     this.applyFilters();
     this.isLoading = false;
@@ -158,6 +170,11 @@ export class FindTalent implements OnInit {
     }
     if (this.maxRate) {
       filtered = filtered.filter(f => (f.hourly_rate || 0) <= this.maxRate!);
+    }
+
+    // Filter for top rated if selected
+    if (this.showTopRated) {
+      filtered = filtered.filter(f => (f.rating || 0) >= 4.5);
     }
 
     // Sort
@@ -205,6 +222,48 @@ export class FindTalent implements OnInit {
   }
 
   saveTalent(freelancerId: number) {
-    this.snackBar.open('Talent saved to your favorites!', 'Close', { duration: 3000 });
+    const freelancer = this.freelancers.find(f => f.id === freelancerId);
+    if (freelancer) {
+      freelancer.saved = !freelancer.saved;
+      if (freelancer.saved) {
+        this.savedTalents.add(freelancerId);
+        this.savedTalentSummaries.push({ ...freelancer });
+      } else {
+        this.savedTalents.delete(freelancerId);
+        this.savedTalentSummaries = this.savedTalentSummaries.filter((talent) => talent.id !== freelancerId);
+      }
+      this.persistSavedTalents();
+      this.snackBar.open(
+        freelancer.saved ? 'Talent added to favorites!' : 'Talent removed from favorites!',
+        'Close',
+        { duration: 3000 }
+      );
+    }
+  }
+
+  private loadSavedTalents() {
+    try {
+      const stored = localStorage.getItem('saved_talent_data');
+      if (stored) {
+        const talents: Freelancer[] = JSON.parse(stored);
+        talents.forEach((talent) => {
+          this.savedTalents.add(talent.id);
+          this.savedTalentSummaries.push(talent);
+        });
+      } else {
+        const legacy = localStorage.getItem('saved_talent_ids');
+        if (legacy) {
+          JSON.parse(legacy).forEach((talentId: number) => this.savedTalents.add(talentId));
+        }
+      }
+    } catch (err) {
+      console.error('Unable to load saved talents', err);
+    }
+  }
+
+  private persistSavedTalents() {
+    localStorage.setItem('saved_talent_data', JSON.stringify(this.savedTalentSummaries));
+    localStorage.setItem('saved_talent_ids', JSON.stringify(Array.from(this.savedTalents)));
   }
 }
+

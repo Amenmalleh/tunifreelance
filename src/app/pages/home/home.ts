@@ -4,11 +4,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, MatChipsModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatCardModule, MatChipsModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

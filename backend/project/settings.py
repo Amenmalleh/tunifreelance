@@ -137,7 +137,11 @@ REST_FRAMEWORK = {
 # CORS settings
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",  # Angular dev server
+    "http://127.0.0.1:4200",
+    "http://localhost:62082",
+    "http://127.0.0.1:62082",
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
 # JWT settings
 from datetime import timedelta

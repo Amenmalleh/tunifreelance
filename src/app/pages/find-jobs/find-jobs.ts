@@ -21,10 +21,10 @@ import { JobService, JobOffer, JobSearchFilters } from '../../services/job.servi
   imports: [
     CommonModule,
     FormsModule,
-    MatFormFieldModule, 
-    MatInputModule, 
-    MatIconModule, 
-    MatButtonModule, 
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
     MatChipsModule,
     MatCardModule,
     MatDividerModule,
@@ -51,17 +51,21 @@ export class FindJobs implements OnInit {
   headerSearchText = '';
   locationText = '';
   sortBy = '-created_at';
+  activeTab = 'most_recent';
   minBudget: number | null = null;
   maxBudget: number | null = null;
+  savedJobs: Set<number> = new Set();
+  savedJobSummaries: JobOffer[] = [];
 
   ngOnInit() {
+    this.loadSavedJobs();
     this.loadJobs();
   }
 
   loadJobs() {
     this.isLoading = true;
     const filters: JobSearchFilters = {};
-    
+
     const searchQuery = this.searchText || this.headerSearchText;
     if (searchQuery) filters.search = searchQuery;
     if (this.selectedCategory) filters.category = this.selectedCategory;
@@ -73,7 +77,7 @@ export class FindJobs implements OnInit {
     this.jobService.getJobOffers(filters).subscribe({
       next: (data) => {
         this.jobs = data;
-        this.filteredJobs = data;
+        this.filteredJobs = this.sortJobs(data);
         this.isLoading = false;
         this.cdr.markForCheck();
       },
@@ -95,10 +99,23 @@ export class FindJobs implements OnInit {
 
   search() {
     this.loadJobs();
+    // After search, we clear the search input to reset the form, while keeping the filtered jobs displayed
+    // Actually, "clear filters after search" might mean a button to clear filters.
   }
 
   headerSearch() {
     this.searchText = this.headerSearchText;
+    this.loadJobs();
+    this.headerSearchText = '';
+  }
+
+  setTab(tab: string) {
+    this.activeTab = tab;
+    if (tab === 'best_matches') {
+      this.sortBy = ''; // Or some AI matching logic if available
+    } else if (tab === 'most_recent') {
+      this.sortBy = '-created_at';
+    }
     this.loadJobs();
   }
 
@@ -113,11 +130,75 @@ export class FindJobs implements OnInit {
     this.loadJobs();
   }
 
+  private loadSavedJobs() {
+    try {
+      const stored = localStorage.getItem('saved_jobs');
+      if (stored) {
+        const jobs: JobOffer[] = JSON.parse(stored);
+        jobs.forEach((job) => {
+          this.savedJobs.add(job.id);
+          this.savedJobSummaries.push(job);
+        });
+      } else {
+        const legacy = localStorage.getItem('saved_job_ids');
+        if (legacy) {
+          JSON.parse(legacy).forEach((jobId: number) => this.savedJobs.add(jobId));
+        }
+      }
+    } catch (err) {
+      console.error('Unable to load saved jobs', err);
+    }
+  }
+
+  private persistSavedJobs() {
+    localStorage.setItem('saved_jobs', JSON.stringify(this.savedJobSummaries));
+    localStorage.setItem('saved_job_ids', JSON.stringify(Array.from(this.savedJobs)));
+  }
+
+  private sortJobs(jobs: JobOffer[]): JobOffer[] {
+    const sorted = [...jobs];
+    switch (this.sortBy) {
+      case '-created_at':
+        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'created_at':
+        return sorted.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case '-budget':
+        return sorted.sort((a, b) => b.budget - a.budget);
+      case 'budget':
+        return sorted.sort((a, b) => a.budget - b.budget);
+      case 'deadline':
+        return sorted.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+      default:
+        return sorted;
+    }
+  }
+
   applyForJob(jobId: number) {
     this.router.navigate(['/proposal', jobId]);
   }
 
+  isSaved(jobId: number): boolean {
+    return this.savedJobs.has(jobId);
+  }
+
   saveJob(jobId: number) {
-    this.snackBar.open('Job saved to your profile!', 'Close', { duration: 3000 });
+    const job = this.jobs.find((item) => item.id === jobId);
+    if (!job) {
+      this.snackBar.open('Unable to save job at the moment.', 'Close', { duration: 3000 });
+      return;
+    }
+
+    if (this.savedJobs.has(jobId)) {
+      this.savedJobs.delete(jobId);
+      this.savedJobSummaries = this.savedJobSummaries.filter((saved) => saved.id !== jobId);
+      this.persistSavedJobs();
+      this.snackBar.open('Job removed from favorites.', 'Close', { duration: 3000 });
+    } else {
+      this.savedJobs.add(jobId);
+      this.savedJobSummaries.push(job);
+      this.persistSavedJobs();
+      this.snackBar.open('Job added to favorites.', 'Close', { duration: 3000 });
+    }
   }
 }
+

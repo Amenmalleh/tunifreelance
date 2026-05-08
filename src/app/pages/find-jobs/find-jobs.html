@@ -111,20 +111,21 @@
       <div class="feed-header">
         <h2>Available Jobs <span class="job-count" *ngIf="!isLoading">({{ filteredJobs.length }})</span></h2>
         <div class="feed-tabs">
-          <span class="active-tab">Best Matches</span>
-          <span>Most Recent</span>
+          <span [class.active-tab]="activeTab === 'best_matches'" (click)="setTab('best_matches')" style="cursor: pointer;">Best Matches</span>
+          <span [class.active-tab]="activeTab === 'most_recent'" (click)="setTab('most_recent')" style="cursor: pointer;">Most Recent</span>
         </div>
       </div>
 
       <!-- Search Bar -->
-      <div class="search-section">
-        <mat-form-field appearance="outline" class="search-field">
+      <div class="search-section" style="display: flex; gap: 10px; align-items: center;">
+        <mat-form-field appearance="outline" class="search-field" style="flex: 1;">
           <mat-label>Search jobs</mat-label>
           <input matInput placeholder="Search by title or keyword..." [(ngModel)]="searchText" (keyup.enter)="search()">
           <button mat-icon-button matSuffix (click)="search()">
             <mat-icon>search</mat-icon>
           </button>
         </mat-form-field>
+        <button mat-button color="warn" (click)="clearFilters()" *ngIf="searchText || locationText || selectedCategory || minBudget || maxBudget">Clear Filters</button>
       </div>
 
       <!-- Loading State -->
@@ -157,7 +158,7 @@
                 </div>
               </div>
               <button mat-icon-button class="save-icon" (click)="saveJob(job.id)">
-                <mat-icon>favorite_border</mat-icon>
+                <mat-icon [style.color]="isSaved(job.id) ? '#e91e63' : 'inherit'">{{ isSaved(job.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
               </button>
             </div>
 

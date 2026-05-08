@@ -1,5 +1,5 @@
 .manage-proposals-page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(140deg, #2d3057 0%, #3f4d91 45%, #6b66d6 100%);
   min-height: 100vh;
   padding: 40px 20px;
 }
@@ -12,22 +12,25 @@
 .proposals-header {
   padding: 20px 0;
   margin-bottom: 20px;
+}
 
-  h2 {
-    font-size: 2rem;
-    font-weight: 600;
-    color: white;
-    margin: 0 0 5px 0;
-  }
+.proposals-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #5f7cff;
+  margin: 0 0 5px 0;
+}
 
-  .subtitle {
-    color: rgba(255, 255, 255, 0.8);
-    font-size: 1rem;
-  }
+.proposals-header .subtitle {
+  color: #5f7cff;
+  font-size: 1rem;
 }
 
 .proposals-card {
   padding: 30px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 28px;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.14);
 }
 
 .loading-container {
@@ -37,12 +40,12 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
+}
 
-  p {
-    margin-top: 20px;
-    font-size: 1rem;
-    color: #666;
-  }
+.loading-container p {
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #666;
 }
 
 .empty-state {
@@ -52,36 +55,36 @@
   justify-content: center;
   padding: 60px 20px;
   text-align: center;
+}
 
-  mat-icon {
-    font-size: 64px;
-    width: 64px;
-    height: 64px;
-    color: #ccc;
-    margin-bottom: 20px;
-  }
+.empty-state mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #ccc;
+  margin-bottom: 20px;
+}
 
-  h3 {
-    font-size: 1.5rem;
-    color: #333;
-    margin-bottom: 10px;
-  }
+.empty-state h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
 
-  p {
-    color: #666;
-  }
+.empty-state p {
+  color: #666;
 }
 
 .tab-label {
   display: flex;
   align-items: center;
   gap: 10px;
+}
 
-  mat-icon {
-    font-size: 18px !important;
-    width: 18px !important;
-    height: 18px !important;
-  }
+.tab-label mat-icon {
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
 }
 
 .proposals-list {
@@ -92,26 +95,28 @@
 }
 
 .proposal-card {
-  background: white;
+  background: rgba(255, 255, 255, 0.96);
   border-left: 4px solid #667eea;
+  border-radius: 20px;
   transition: all 0.3s ease;
   cursor: pointer;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
 
-  &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
+.proposal-card:hover {
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.18);
+  transform: translateY(-3px);
+}
 
-  &.accepted {
-    border-left-color: #4caf50;
-  }
+.proposal-card.accepted {
+  border-left-color: #4caf50;
+  background: rgba(237, 247, 237, 0.98);
+}
 
-  &.rejected {
-    border-left-color: #f44336;
-    opacity: 0.7;
-  }
-
-  padding: 20px;
+.proposal-card.rejected {
+  border-left-color: #f44336;
+  background: rgba(255, 241, 241, 0.98);
 }
 
 .proposal-header-row {
@@ -120,8 +125,10 @@
   align-items: flex-start;
   margin-bottom: 15px;
   gap: 15px;
+}
 
-  @media (max-width: 600px) {
+@media (max-width: 600px) {
+  .proposal-header-row {
     flex-direction: column;
   }
 }
@@ -131,34 +138,39 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
+}
 
-  .freelancer-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0;
-    color: #333;
-  }
+.proposal-info .freelancer-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
 
-  .job-title {
-    font-size: 0.95rem;
-    color: #666;
-    font-weight: 500;
-  }
+.proposal-info .job-title {
+  font-size: 0.95rem;
+  color: #666;
+  font-weight: 500;
+}
 
-  .proposal-date {
-    font-size: 0.85rem;
-    color: #999;
-  }
+.proposal-info .proposal-date {
+  font-size: 0.85rem;
+  color: #999;
 }
 
 .proposal-content {
   padding: 15px 0;
+}
 
-  .proposal-message {
-    margin: 0;
-    color: #555;
-    line-height: 1.5;
-  }
+.proposal-content .proposal-message {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.75;
+  font-size: 14px;
+  padding: 16px;
+  background: #eef4ff;
+  border-radius: 16px;
+  border-left: 4px solid #5f7cff;
 }
 
 .proposal-pricing {
@@ -169,28 +181,28 @@
   padding: 15px;
   border-radius: 4px;
   margin: 15px 0;
+}
 
-  .price-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    flex: 1;
+.proposal-pricing .price-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1;
+}
 
-    .label {
-      color: #666;
-      font-weight: 500;
-    }
+.proposal-pricing .price-item .label {
+  color: #666;
+  font-weight: 500;
+}
 
-    .value {
-      color: #333;
-      font-weight: 600;
-      font-size: 1.1rem;
+.proposal-pricing .price-item .value {
+  color: #333;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
 
-      &.contract-price {
-        color: #4caf50;
-      }
-    }
-  }
+.proposal-pricing .price-item .value.contract-price {
+  color: #4caf50;
 }
 
 .contract-status {
@@ -203,23 +215,24 @@
   color: #2e7d32;
   font-size: 0.95rem;
   margin-top: 15px;
+}
 
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
+.contract-status mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .proposal-actions {
   display: flex;
   gap: 10px;
   margin-top: 15px;
+}
 
-  button {
-    flex: 1;
-    mat-icon {
-      margin-right: 5px;
-    }
-  }
+.proposal-actions button {
+  flex: 1;
+}
+
+.proposal-actions button mat-icon {
+  margin-right: 5px;
 }

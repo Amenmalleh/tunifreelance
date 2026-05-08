@@ -121,7 +121,7 @@ export class ManageProposals implements OnInit {
     event.stopPropagation();
     this.proposalService.acceptProposal(proposal.id).subscribe({
       next: () => {
-        this.snackBar.open('Proposal accepted! Contract created.', 'Close', { duration: 3000 });
+        this.snackBar.open('Proposal accepted! Waiting for freelancer to approve and create the contract.', 'Close', { duration: 5000 });
         this.loadProposals();
       },
       error: (err) => {
