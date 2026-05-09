@@ -21,4 +21,5 @@ export class Home {
     { name: 'Marketing', icon: 'trending_up', jobs: '300+' },
     { name: 'Business', icon: 'business', jobs: '200+' },
   ];
+  //pour un commit 
 }
