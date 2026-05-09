@@ -36,7 +36,7 @@ export interface SignupData {
 }
 
 export interface LoginData {
-  username: string;
+  identifier: string;
   password: string;
 }
 
@@ -196,21 +196,18 @@ export class AuthService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    let errorMessage = 'An unknown error occurred!';
-    if (error.error instanceof ErrorEvent) {
-      // Client-side or network error
-      errorMessage = `Error: ${error.error.message}`;
-    } else {
-      if (error.error && typeof error.error === 'object') {
-        const errors = error.error;
-        if (errors.username) errorMessage = errors.username[0];
-        else if (errors.email) errorMessage = errors.email[0];
-        else if (errors.password) errorMessage = errors.password[0];
-        else if (errors.non_field_errors) errorMessage = errors.non_field_errors[0];
-        else if (errors.detail) errorMessage = errors.detail;
-      } else {
-        errorMessage = `Error Code: ${error.status}\nMessage: ${error.message}`;
-      }
+    let errorMessage = 'Une erreur inconnue est survenue.';
+    if (error.status === 0) {
+      errorMessage = 'Impossible de joindre le serveur. Vérifiez votre connexion.';
+    } else if (error.error && typeof error.error === 'object') {
+      const e = error.error;
+      if (e.error)              errorMessage = e.error;
+      else if (e.identifier)    errorMessage = Array.isArray(e.identifier) ? e.identifier[0] : e.identifier;
+      else if (e.password)      errorMessage = Array.isArray(e.password)   ? e.password[0]   : e.password;
+      else if (e.username)      errorMessage = Array.isArray(e.username)   ? e.username[0]   : e.username;
+      else if (e.email)         errorMessage = Array.isArray(e.email)      ? e.email[0]      : e.email;
+      else if (e.non_field_errors) errorMessage = e.non_field_errors[0];
+      else if (e.detail)        errorMessage = e.detail;
     }
     console.error('Auth error:', error);
     return throwError(() => new Error(errorMessage));

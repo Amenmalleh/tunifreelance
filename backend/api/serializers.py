@@ -42,8 +42,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField(required=True)
-    password = serializers.CharField(required=True)
+    identifier = serializers.CharField(required=True, error_messages={'required': 'Ce champ est obligatoire.'})
+    password = serializers.CharField(required=True, error_messages={'required': 'Le mot de passe est obligatoire.'})
 
 
 class JobOfferSerializer(serializers.ModelSerializer):

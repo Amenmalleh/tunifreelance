@@ -1,129 +1,194 @@
 <div class="auth-wrapper">
   <div class="auth-container" [class.show-form]="!isSelectionStep">
-    <!-- Step 1: Role Selection -->
+
+    <!-- ══════════════════════════════════════════
+         Étape 1 : Choix du rôle (inscription)
+    ══════════════════════════════════════════ -->
     <div *ngIf="isSelectionStep" class="selection-step animate-fade-in">
-      <h1 class="auth-title">Join FreelanceHub</h1>
-      <p class="auth-subtitle">Select how you want to use the platform</p>
+      <h1 class="auth-title">Rejoindre TuniFreelance</h1>
+      <p class="auth-subtitle">Choisissez comment vous souhaitez utiliser la plateforme</p>
 
       <div class="role-cards">
         <mat-card class="role-card client" (click)="selectRole('client')">
-          <div class="role-icon-wrapper">
-            <mat-icon>business_center</mat-icon>
-          </div>
+          <div class="role-icon-wrapper"><mat-icon>business_center</mat-icon></div>
           <mat-card-header>
-            <mat-card-title>I'm a Client</mat-card-title>
-            <mat-card-subtitle>Hiring for a project</mat-card-subtitle>
+            <mat-card-title>Je suis Client</mat-card-title>
+            <mat-card-subtitle>Je recrute pour un projet</mat-card-subtitle>
           </mat-card-header>
-          <mat-card-content>
-            <p>Find the best talent for your next big idea.</p>
-          </mat-card-content>
-          <div class="role-action">
-            <span>Hire Talent</span>
-            <mat-icon>arrow_forward</mat-icon>
-          </div>
+          <mat-card-content><p>Trouvez les meilleurs talents pour concrétiser vos idées.</p></mat-card-content>
+          <div class="role-action"><span>Recruter</span><mat-icon>arrow_forward</mat-icon></div>
         </mat-card>
 
         <mat-card class="role-card freelancer" (click)="selectRole('freelancer')">
-          <div class="role-icon-wrapper">
-            <mat-icon>person_search</mat-icon>
-          </div>
+          <div class="role-icon-wrapper"><mat-icon>person_search</mat-icon></div>
           <mat-card-header>
-            <mat-card-title>I'm a Freelancer</mat-card-title>
-            <mat-card-subtitle>Looking for work</mat-card-subtitle>
+            <mat-card-title>Je suis Freelancer</mat-card-title>
+            <mat-card-subtitle>Je cherche des missions</mat-card-subtitle>
           </mat-card-header>
-          <mat-card-content>
-            <p>Apply to top projects and earn from your skills.</p>
-          </mat-card-content>
-          <div class="role-action">
-            <span>Find Work</span>
-            <mat-icon>arrow_forward</mat-icon>
-          </div>
+          <mat-card-content><p>Postulez aux meilleurs projets et valorisez vos compétences.</p></mat-card-content>
+          <div class="role-action"><span>Trouver du travail</span><mat-icon>arrow_forward</mat-icon></div>
         </mat-card>
       </div>
 
       <div class="auth-footer">
-        <p>Already have an account? <a (click)="isSelectionStep = false; selectedRole = 'freelancer'; isLogin = true">Sign In</a></p>
+        <p>Déjà un compte ?
+          <a (click)="isSelectionStep = false; selectedRole = 'freelancer'; isLogin = true">Se connecter</a>
+        </p>
       </div>
     </div>
 
-    <!-- Step 2: Auth Form (Login/Register) -->
+    <!-- ══════════════════════════════════════════
+         Étape 2 : Formulaires connexion / inscription
+    ══════════════════════════════════════════ -->
     <div *ngIf="!isSelectionStep" class="form-step animate-slide-up">
       <button mat-icon-button class="back-btn" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
       </button>
 
-      <h2 class="form-title">{{ isLogin ? 'Welcome Back' : 'Create Account' }}</h2>
+      <h2 class="form-title">{{ isLogin ? 'Bon retour !' : 'Créer un compte' }}</h2>
       <p class="form-subtitle">
-        {{ isLogin ? 'Access your account as a ' : 'Join us as a ' }}
-        <span class="role-badge" [class.freelancer]="selectedRole === 'freelancer'">
-          {{ selectedRole }}
+        {{ isLogin ? 'Accédez à votre espace' : 'Rejoignez-nous en tant que' }}
+        <span *ngIf="!isLogin" class="role-badge" [class.freelancer]="selectedRole === 'freelancer'">
+          {{ selectedRole === 'client' ? 'Client' : 'Freelancer' }}
         </span>
       </p>
 
-      <form [formGroup]="authForm" (ngSubmit)="onSubmit()" class="auth-form">
-        <!-- Username Field (for both login and signup) -->
+      <!-- ─── FORMULAIRE CONNEXION ─── -->
+      <form *ngIf="isLogin" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+        <!-- Identifiant (email ou username) -->
         <mat-form-field appearance="outline">
-          <mat-label>Username</mat-label>
-          <input matInput formControlName="username" placeholder="e.g. johndoe" required>
-          <mat-icon matSuffix>person</mat-icon>
+          <mat-label>Email ou nom d'utilisateur</mat-label>
+          <input
+            matInput
+            formControlName="identifier"
+            placeholder="ex : johndoe ou john@exemple.com"
+            autocomplete="username"
+            autocapitalize="none"
+          />
+          <mat-icon matSuffix>{{ identifierHint?.icon ?? 'account_circle' }}</mat-icon>
+
+          <!-- Hint dynamique selon la saisie -->
+          <mat-hint *ngIf="identifierHint" class="identifier-hint">
+            <mat-icon style="font-size:13px;vertical-align:middle;">{{ identifierHint.icon }}</mat-icon>
+            {{ identifierHint.label }}
+          </mat-hint>
+
+          <!-- Erreurs -->
+          <mat-error *ngIf="lf('identifier').hasError('required')">Ce champ est obligatoire.</mat-error>
+          <mat-error *ngIf="lf('identifier').hasError('minlength')">Minimum 3 caractères.</mat-error>
         </mat-form-field>
 
-        <!-- Signup Fields -->
-        <ng-container *ngIf="!isLogin">
-          <div class="form-row">
-            <mat-form-field appearance="outline">
-              <mat-label>First name</mat-label>
-              <input matInput formControlName="firstName" placeholder="e.g. John" required>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline">
-              <mat-label>Last name</mat-label>
-              <input matInput formControlName="lastName" placeholder="e.g. Doe" required>
-            </mat-form-field>
-          </div>
-        </ng-container>
-
+        <!-- Mot de passe -->
         <mat-form-field appearance="outline">
-          <mat-label>Email</mat-label>
-          <input matInput formControlName="email" type="email" placeholder="example@email.com" required>
-          <mat-icon matSuffix>email</mat-icon>
+          <mat-label>Mot de passe</mat-label>
+          <input
+            matInput
+            formControlName="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password"
+          />
+          <button mat-icon-button matSuffix type="button"
+            (click)="showPassword = !showPassword"
+            [attr.aria-label]="showPassword ? 'Masquer' : 'Afficher'">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="lf('password').hasError('required')">Le mot de passe est obligatoire.</mat-error>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Password</mat-label>
-          <input matInput formControlName="password" type="password" placeholder="Password" required>
-          <mat-icon matSuffix>lock</mat-icon>
-          <mat-hint *ngIf="!isLogin">Password (8 or more characters)</mat-hint>
-        </mat-form-field>
-
-        <!-- Confirm Password for Signup -->
-        <ng-container *ngIf="!isLogin">
-          <mat-form-field appearance="outline">
-            <mat-label>Confirm Password</mat-label>
-            <input matInput formControlName="password2" type="password" placeholder="Confirm Password" required>
-            <mat-icon matSuffix>lock</mat-icon>
-          </mat-form-field>
-        </ng-container>
-
-        <button mat-raised-button color="primary" type="submit" class="submit-btn" [disabled]="authForm.invalid || isLoading">
-          <span *ngIf="!isLoading">{{ isLogin ? 'Sign In' : 'Create Account' }}</span>
-          <span *ngIf="isLoading">Loading...</span>
+        <!-- Bouton connexion -->
+        <button
+          mat-raised-button color="primary" type="submit"
+          class="submit-btn"
+          [disabled]="isLoading">
+          <mat-spinner *ngIf="isLoading" diameter="22" style="display:inline-block;margin-right:10px;"></mat-spinner>
+          <span>{{ isLoading ? 'Connexion en cours…' : 'Se connecter' }}</span>
         </button>
 
-        <div class="divider">
-          <span>OR</span>
+        <p class="toggle-auth">
+          Pas encore de compte ?
+          <a (click)="toggleAuthMode()">Créer un compte</a>
+        </p>
+      </form>
+
+      <!-- ─── FORMULAIRE INSCRIPTION ─── -->
+      <form *ngIf="!isLogin" [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+        <!-- Nom d'utilisateur -->
+        <mat-form-field appearance="outline">
+          <mat-label>Nom d'utilisateur</mat-label>
+          <input matInput formControlName="username" placeholder="ex : johndoe" autocapitalize="none" />
+          <mat-icon matSuffix>person</mat-icon>
+          <mat-error *ngIf="sf('username').hasError('required')">Le nom d'utilisateur est obligatoire.</mat-error>
+          <mat-error *ngIf="sf('username').hasError('minlength')">Minimum 3 caractères.</mat-error>
+          <mat-error *ngIf="sf('username').hasError('pattern')">Aucun espace autorisé.</mat-error>
+        </mat-form-field>
+
+        <!-- Prénom / Nom -->
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="firstName" placeholder="Jean" />
+            <mat-error *ngIf="sf('firstName').hasError('required')">Obligatoire.</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastName" placeholder="Dupont" />
+            <mat-error *ngIf="sf('lastName').hasError('required')">Obligatoire.</mat-error>
+          </mat-form-field>
         </div>
 
-        <div class="social-auth">
-          <button mat-stroked-button type="button" class="google-btn">
-            <img src="https://lh3.googleusercontent.com/COxitqSg0XyMUC9P7rR8zXZMaG0C1W0l5h8xU0S0H7q6O1e7o7O_L1A9Z1k=s48" alt="Google">
-            Continue with Google
+        <!-- Email -->
+        <mat-form-field appearance="outline">
+          <mat-label>Adresse email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="jean@exemple.com" autocomplete="email" />
+          <mat-icon matSuffix>email</mat-icon>
+          <mat-error *ngIf="sf('email').hasError('required')">L'email est obligatoire.</mat-error>
+          <mat-error *ngIf="sf('email').hasError('email')">Format d'email invalide.</mat-error>
+        </mat-form-field>
+
+        <!-- Mot de passe -->
+        <mat-form-field appearance="outline">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput formControlName="password"
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="8 caractères minimum"
+            autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="showPassword = !showPassword">
+            <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
           </button>
-        </div>
+          <mat-hint>8 caractères minimum</mat-hint>
+          <mat-error *ngIf="sf('password').hasError('required')">Le mot de passe est obligatoire.</mat-error>
+          <mat-error *ngIf="sf('password').hasError('minlength')">Minimum 8 caractères.</mat-error>
+        </mat-form-field>
+
+        <!-- Confirmation mot de passe -->
+        <mat-form-field appearance="outline">
+          <mat-label>Confirmer le mot de passe</mat-label>
+          <input matInput formControlName="password2"
+            [type]="showPassword2 ? 'text' : 'password'"
+            placeholder="Répétez le mot de passe"
+            autocomplete="new-password" />
+          <button mat-icon-button matSuffix type="button" (click)="showPassword2 = !showPassword2">
+            <mat-icon>{{ showPassword2 ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-error *ngIf="sf('password2').hasError('required')">Confirmez votre mot de passe.</mat-error>
+          <mat-error *ngIf="sf('password2').hasError('mismatch')">Les mots de passe ne correspondent pas.</mat-error>
+        </mat-form-field>
+
+        <!-- Bouton inscription -->
+        <button
+          mat-raised-button color="primary" type="submit"
+          class="submit-btn"
+          [disabled]="isLoading">
+          <mat-spinner *ngIf="isLoading" diameter="22" style="display:inline-block;margin-right:10px;"></mat-spinner>
+          <span>{{ isLoading ? 'Création en cours…' : 'Créer mon compte' }}</span>
+        </button>
 
         <p class="toggle-auth">
-          {{ isLogin ? "Don't have an account?" : "Already have an account?" }}
-          <a (click)="toggleAuthMode()">{{ isLogin ? 'Sign Up' : 'Sign In' }}</a>
+          Déjà un compte ?
+          <a (click)="toggleAuthMode()">Se connecter</a>
         </p>
       </form>
     </div>

@@ -141,9 +141,10 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",  # Angular dev server
+# CORS settings — autorise tous les ports localhost (dev)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://localhost:\d+$",
+    r"^http://127\.0\.0\.1:\d+$",
 ]
 
 # JWT settings

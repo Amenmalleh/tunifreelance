@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface JobOffer {
@@ -24,16 +24,17 @@ export interface CreateJobOfferPayload {
   deadline: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class JobService {
   private readonly API_URL = 'http://127.0.0.1:8000/api';
 
   constructor(private http: HttpClient) {}
 
-  getJobOffers(): Observable<JobOffer[]> {
-    return this.http.get<JobOffer[]>(`${this.API_URL}/joboffers/`);
+  getJobOffers(search = '', category = ''): Observable<JobOffer[]> {
+    let params = new HttpParams();
+    if (search.trim())    params = params.set('search', search.trim());
+    if (category.trim())  params = params.set('category', category.trim());
+    return this.http.get<JobOffer[]>(`${this.API_URL}/joboffers/`, { params });
   }
 
   getJobOffer(id: number): Observable<JobOffer> {

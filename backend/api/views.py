@@ -1,8 +1,9 @@
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Q
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from rest_framework import status, permissions, viewsets
+from rest_framework import filters, status, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -33,20 +34,36 @@ class LoginView(APIView):
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
-        if serializer.is_valid():
-            user = authenticate(
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password']
-            )
-            if user:
-                refresh = RefreshToken.for_user(user)
-                return Response({
-                    'user': UserSerializer(user).data,
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }, status=status.HTTP_200_OK)
-            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        identifier = serializer.validated_data['identifier'].strip()
+        password   = serializer.validated_data['password']
+        _bad_creds = Response(
+            {'error': 'Identifiant ou mot de passe incorrect.'},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+        # Résolution email → username
+        if '@' in identifier:
+            try:
+                user_obj = User.objects.get(email__iexact=identifier)
+                username = user_obj.username
+            except User.DoesNotExist:
+                return _bad_creds
+        else:
+            username = identifier
+
+        user = authenticate(username=username, password=password)
+        if not user:
+            return _bad_creds
+
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+        }, status=status.HTTP_200_OK)
 
 
 class IsClient(permissions.BasePermission):
@@ -87,6 +104,8 @@ class JobOfferViewSet(viewsets.ModelViewSet):
     queryset = JobOffer.objects.all()
     serializer_class = JobOfferSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title', 'description', 'category']
 
     def get_permissions(self):
         if self.action == 'create':
@@ -98,16 +117,25 @@ class JobOfferViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        queryset = JobOffer.objects.all()
+        queryset = JobOffer.objects.select_related('client', 'client__profile')
         user = self.request.user
+
         if not user.is_authenticated:
-            return queryset.filter(status=JobOffer.STATUS_OPEN)
-        profile = getattr(user, 'profile', None)
-        if profile is None:
-            profile, _ = Profile.objects.get_or_create(user=user)
-        if profile.role == Profile.ROLE_FREELANCER:
-            return queryset.filter(status=JobOffer.STATUS_OPEN)
-        return queryset.filter(Q(status=JobOffer.STATUS_OPEN) | Q(client=user))
+            queryset = queryset.filter(status=JobOffer.STATUS_OPEN)
+        else:
+            profile = getattr(user, 'profile', None)
+            if profile is None:
+                profile, _ = Profile.objects.get_or_create(user=user)
+            if profile.role == Profile.ROLE_FREELANCER:
+                queryset = queryset.filter(status=JobOffer.STATUS_OPEN)
+            else:
+                queryset = queryset.filter(Q(status=JobOffer.STATUS_OPEN) | Q(client=user))
+
+        category = self.request.query_params.get('category', '').strip()
+        if category:
+            queryset = queryset.filter(category__icontains=category)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(client=self.request.user)
