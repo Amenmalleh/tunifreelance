@@ -77,6 +77,7 @@ export class ManageProposals implements OnInit {
       default:
         return '';
     }
+    //pour un commit 
   }
 
   getStatusLabel(status: string): string {
