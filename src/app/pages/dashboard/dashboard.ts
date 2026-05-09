@@ -54,7 +54,7 @@ export class Dashboard implements OnInit {
     { label: 'Payment of 450 DT cleared', time: 'il y a 5h', icon: 'payments' },
     { label: 'Project "Banking App" completed', time: 'il y a 1j', icon: 'check_circle' }
   ];
-
+  
   clientProposals: Proposal[] = [];
   isClientProposalLoading = false;
 
