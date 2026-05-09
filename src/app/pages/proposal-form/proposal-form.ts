@@ -58,6 +58,7 @@ export class ProposalForm implements OnInit {
       }
     });
   }
+  //pour un commit
 
   loadJob(jobId: number) {
     this.jobService.getJobOffer(jobId).subscribe({
