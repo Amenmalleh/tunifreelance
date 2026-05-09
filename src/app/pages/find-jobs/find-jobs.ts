@@ -105,7 +105,7 @@ export class FindJobs implements OnInit, OnDestroy {
   onSearchInput() {
     this.dispatch();
   }
-
+  //pour un commit
   // Clic sur une puce de catégorie
   filterByCategory(cat: string) {
     this.selectedCategory = this.selectedCategory === cat ? '' : cat;
