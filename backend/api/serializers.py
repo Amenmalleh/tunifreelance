@@ -52,7 +52,11 @@ class JobOfferSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobOffer
-        fields = ('id', 'client', 'client_role', 'title', 'category', 'description', 'budget', 'deadline', 'status', 'created_at', 'updated_at')
+        fields = (
+            'id', 'client', 'client_role', 'title', 'category', 'description',
+            'budget', 'deadline', 'status', 'skills_required', 'experience_level',
+            'created_at', 'updated_at',
+        )
         read_only_fields = ('id', 'client', 'client_role', 'created_at', 'updated_at')
 
 

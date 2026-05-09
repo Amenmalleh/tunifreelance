@@ -27,15 +27,26 @@ class JobOffer(models.Model):
         (STATUS_CLOSED, 'Fermé'),
     ]
 
-    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_offers')
-    title = models.CharField(max_length=255)
-    category = models.CharField(max_length=100, blank=True)
-    description = models.TextField()
-    budget = models.DecimalField(max_digits=10, decimal_places=2)
-    deadline = models.DateField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_OPEN)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    LEVEL_BEGINNER     = 'beginner'
+    LEVEL_INTERMEDIATE = 'intermediate'
+    LEVEL_EXPERT       = 'expert'
+    LEVEL_CHOICES = [
+        (LEVEL_BEGINNER,     'Débutant'),
+        (LEVEL_INTERMEDIATE, 'Intermédiaire'),
+        (LEVEL_EXPERT,       'Expert'),
+    ]
+
+    client           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_offers')
+    title            = models.CharField(max_length=255)
+    category         = models.CharField(max_length=100, blank=True)
+    description      = models.TextField()
+    budget           = models.DecimalField(max_digits=10, decimal_places=2)
+    deadline         = models.DateField()
+    status           = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    skills_required  = models.TextField(blank=True, default='')
+    experience_level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default=LEVEL_INTERMEDIATE)
+    created_at       = models.DateTimeField(auto_now_add=True)
+    updated_at       = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']

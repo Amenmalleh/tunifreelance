@@ -12,6 +12,8 @@ export interface JobOffer {
   budget: number;
   deadline: string;
   status: 'open' | 'closed';
+  skills_required: string;
+  experience_level: 'beginner' | 'intermediate' | 'expert';
   created_at: string;
   updated_at: string;
 }
